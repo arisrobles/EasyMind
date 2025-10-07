@@ -4,6 +4,7 @@ import 'firebase_options.dart';
 import 'student_landing_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'app_initialization_service.dart';
+import 'responsive_utils.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -90,93 +91,230 @@ class StudentLoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFEFE9D5),
-      body: Stack(
-        children: [
-          Positioned(
-            top: 50,
-            left: 0,
-            right: 0,
-            child: Center(child: Image.asset('assets/logo.png', height: 400)),
-          ),
-          Positioned(
-            top: 450,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Text(
-                'EasyMind',
-                style: TextStyle(
-                  fontSize: 80,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF648BA2),
-                  fontFamily: 'Poppins',
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 580,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: CustomTextField(
-                controller: nicknameController,
-                labelText: 'Enter your nickname',
-                width: 800,
-                height: 120,
-              ),
-            ),
-          ),
-          Positioned(
-            top: 750,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: CustomButton(
-                text: 'LOGIN',
-                width: 800,
-                height: 80,
-                onPressed: () {
-                  String nickname = nicknameController.text.trim();
-                  if (nickname.isNotEmpty) {
-                    _updateStudentLogin(nickname).then((_) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) =>
-                                  StudentLandingPage(nickname: nickname),
-                        ),
-                      );
-                    });
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          "Please enter a nickname",
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        backgroundColor: const Color.fromARGB(255, 39, 39, 39),
-                        behavior: SnackBarBehavior.floating,
-                        margin: EdgeInsets.all(20),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        duration: Duration(seconds: 3),
-                      ),
-                    );
-                  }
-                },
-              ),
-            ),
-          ),
-        ],
+      body: ResponsiveWidget(
+        mobile: _buildMobileLayout(context),
+        tablet: _buildTabletLayout(context),
+        desktop: _buildDesktopLayout(context),
+        largeDesktop: _buildLargeDesktopLayout(context),
       ),
     );
+  }
+
+  Widget _buildMobileLayout(BuildContext context) {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: ResponsiveUtils.getResponsivePadding(context),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(height: MediaQuery.of(context).size.height * 0.1),
+            Image.asset(
+              'assets/logo.png',
+              height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 200),
+            ),
+            ResponsiveSpacing(mobileSpacing: 20),
+            ResponsiveText(
+              'EasyMind',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF648BA2),
+                fontFamily: 'Poppins',
+              ),
+              mobileFontSize: 40,
+              tabletFontSize: 50,
+              desktopFontSize: 60,
+              largeDesktopFontSize: 70,
+            ),
+            ResponsiveSpacing(mobileSpacing: 30),
+            CustomTextField(
+              controller: nicknameController,
+              labelText: 'Enter your nickname',
+              width: MediaQuery.of(context).size.width - 32,
+              height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 50),
+            ),
+            ResponsiveSpacing(mobileSpacing: 20),
+            CustomButton(
+              text: 'LOGIN',
+              width: MediaQuery.of(context).size.width - 32,
+              height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 50),
+              onPressed: () => _handleLogin(context),
+            ),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.1),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabletLayout(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: ResponsiveUtils.getResponsiveConstraints(context),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/logo.png',
+              height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 300),
+            ),
+            ResponsiveSpacing(mobileSpacing: 30),
+            ResponsiveText(
+              'EasyMind',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF648BA2),
+                fontFamily: 'Poppins',
+              ),
+              mobileFontSize: 50,
+              tabletFontSize: 60,
+              desktopFontSize: 70,
+              largeDesktopFontSize: 80,
+            ),
+            ResponsiveSpacing(mobileSpacing: 40),
+            CustomTextField(
+              controller: nicknameController,
+              labelText: 'Enter your nickname',
+              width: ResponsiveUtils.getResponsiveCardWidth(context),
+              height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 60),
+            ),
+            ResponsiveSpacing(mobileSpacing: 30),
+            CustomButton(
+              text: 'LOGIN',
+              width: ResponsiveUtils.getResponsiveCardWidth(context),
+              height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 60),
+              onPressed: () => _handleLogin(context),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDesktopLayout(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: ResponsiveUtils.getResponsiveConstraints(context),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/logo.png',
+              height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 400),
+            ),
+            ResponsiveSpacing(mobileSpacing: 40),
+            ResponsiveText(
+              'EasyMind',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF648BA2),
+                fontFamily: 'Poppins',
+              ),
+              mobileFontSize: 60,
+              tabletFontSize: 70,
+              desktopFontSize: 80,
+              largeDesktopFontSize: 90,
+            ),
+            ResponsiveSpacing(mobileSpacing: 50),
+            CustomTextField(
+              controller: nicknameController,
+              labelText: 'Enter your nickname',
+              width: ResponsiveUtils.getResponsiveCardWidth(context),
+              height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 70),
+            ),
+            ResponsiveSpacing(mobileSpacing: 40),
+            CustomButton(
+              text: 'LOGIN',
+              width: ResponsiveUtils.getResponsiveCardWidth(context),
+              height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 70),
+              onPressed: () => _handleLogin(context),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLargeDesktopLayout(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: ResponsiveUtils.getResponsiveConstraints(context),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/logo.png',
+              height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 500),
+            ),
+            ResponsiveSpacing(mobileSpacing: 50),
+            ResponsiveText(
+              'EasyMind',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF648BA2),
+                fontFamily: 'Poppins',
+              ),
+              mobileFontSize: 70,
+              tabletFontSize: 80,
+              desktopFontSize: 90,
+              largeDesktopFontSize: 100,
+            ),
+            ResponsiveSpacing(mobileSpacing: 60),
+            CustomTextField(
+              controller: nicknameController,
+              labelText: 'Enter your nickname',
+              width: ResponsiveUtils.getResponsiveCardWidth(context),
+              height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 80),
+            ),
+            ResponsiveSpacing(mobileSpacing: 50),
+            CustomButton(
+              text: 'LOGIN',
+              width: ResponsiveUtils.getResponsiveCardWidth(context),
+              height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 80),
+              onPressed: () => _handleLogin(context),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _handleLogin(BuildContext context) {
+    String nickname = nicknameController.text.trim();
+    if (nickname.isNotEmpty) {
+      _updateStudentLogin(nickname).then((_) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => StudentLandingPage(nickname: nickname),
+          ),
+        );
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: ResponsiveText(
+            "Please enter a nickname",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+            mobileFontSize: 16,
+            tabletFontSize: 18,
+            desktopFontSize: 20,
+            largeDesktopFontSize: 22,
+          ),
+          backgroundColor: const Color.fromARGB(255, 39, 39, 39),
+          behavior: SnackBarBehavior.floating,
+          margin: ResponsiveUtils.getResponsivePadding(context),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 15),
+            ),
+          ),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
   }
 }
 
@@ -195,25 +333,51 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fontSize = ResponsiveUtils.getResponsiveFontSize(
+      context,
+      mobile: 16,
+      tablet: 18,
+      desktop: 20,
+      largeDesktop: 22,
+    );
+    
+    final hintFontSize = ResponsiveUtils.getResponsiveFontSize(
+      context,
+      mobile: 14,
+      tablet: 16,
+      desktop: 18,
+      largeDesktop: 20,
+    );
+
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: Color(0xFF6EABCF), width: 8),
+        borderRadius: BorderRadius.circular(
+          ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 25),
+        ),
+        border: Border.all(
+          color: Color(0xFF6EABCF), 
+          width: ResponsiveUtils.isSmallScreen(context) ? 4 : 8,
+        ),
         color: Colors.white,
       ),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 15),
+        padding: EdgeInsets.symmetric(
+          horizontal: ResponsiveUtils.getResponsiveSpacing(context, mobile: 15),
+        ),
         child: TextField(
           controller: controller,
-          style: TextStyle(fontSize: 40, color: Colors.black),
+          style: TextStyle(fontSize: fontSize, color: Colors.black),
           textAlignVertical: TextAlignVertical.center,
           decoration: InputDecoration(
             border: InputBorder.none,
             hintText: labelText,
-            hintStyle: TextStyle(fontSize: 35, color: Colors.black54),
-            contentPadding: EdgeInsets.only(left: 5, top: 30),
+            hintStyle: TextStyle(fontSize: hintFontSize, color: Colors.black54),
+            contentPadding: EdgeInsets.only(
+              left: 5, 
+              top: ResponsiveUtils.isSmallScreen(context) ? 15 : 30,
+            ),
           ),
         ),
       ),
@@ -236,6 +400,14 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fontSize = ResponsiveUtils.getResponsiveFontSize(
+      context,
+      mobile: 16,
+      tablet: 18,
+      desktop: 20,
+      largeDesktop: 22,
+    );
+
     return SizedBox(
       width: width,
       height: height,
@@ -244,16 +416,21 @@ class CustomButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: Color(0xFF648BA2),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(
+              ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 30),
+            ),
           ),
         ),
-        child: Text(
+        child: ResponsiveText(
           text,
           style: TextStyle(
-            fontSize: 35,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
+          mobileFontSize: fontSize,
+          tabletFontSize: fontSize * 1.1,
+          desktopFontSize: fontSize * 1.2,
+          largeDesktopFontSize: fontSize * 1.3,
         ),
       ),
     );

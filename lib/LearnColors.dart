@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'ColorAssessment.dart';
+import 'responsive_utils.dart';
 
 // Removed duplicate main() function - this should only be in main.dart
 
@@ -193,131 +194,305 @@ class _LearnColorsState extends State<LearnColors> with SingleTickerProviderStat
     return Scaffold(
       backgroundColor: const Color(0xFFF7F0DC),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 20.0),
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF648BA2),
-                      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: const Text('Go Back', style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, color: Colors.white)),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Center(
-                  child: Text(
-                    'Learn the Colors',
-                    style: TextStyle(fontSize: 45, fontWeight: FontWeight.bold, color: Color(0xFF4A4E69)),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 500),
-                  transitionBuilder: (child, animation) {
-                    final offsetAnimation = Tween<Offset>(
-                      begin: _animationDirection == 'next'
-                          ? const Offset(1.0, 0.0)
-                          : _animationDirection == 'previous'
-                              ? const Offset(-1.0, 0.0)
-                              : Offset.zero,
-                      end: Offset.zero,
-                    ).animate(animation);
-                    return SlideTransition(
-                      position: offsetAnimation,
-                      child: FadeTransition(
-                        opacity: animation,
-                        child: ScaleTransition(scale: _bounceAnimation, child: child),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    key: ValueKey<int>(currentIndex),
-                    width: 600,
-                    height: 600,
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 5))],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              item['type'] == 'color' ? item['name'] : 'Example',
-                              style: TextStyle(fontSize: 50, fontWeight: FontWeight.bold, color: Color(0xFF4A4E69)),
-                            ),
-                            const SizedBox(width: 10),
-                            IconButton(
-                              icon: Icon(Icons.volume_up, size: 55, color: Color(0xFF648BA2)),
-                              onPressed: _speakContent,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
-                            item['image'],
-                            height: 350,
-                            width: 400,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 100, color: Colors.red),
-                          ),
-                        ),
-                        if (item['type'] == 'example') ...[
-                          const SizedBox(height: 20),
-                          Text(
-                            item['description'],
-                            style: TextStyle(fontSize: 25, fontWeight: FontWeight.w500, color: Color(0xFF4A4E69)),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 30),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      onPressed: currentIndex == 0 ? null : _previousColor,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: currentIndex == 0 ? Colors.grey : const Color(0xFF648BA2),
-                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      child: const Text('Previous', style: TextStyle(fontSize: 25, color: Colors.white)),
-                    ),
-                    const SizedBox(width: 20),
-                    ElevatedButton(
-                      onPressed: _nextColor,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF648BA2),
-                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      child: const Text('Next', style: TextStyle(fontSize: 25, color: Colors.white)),
-                    ),
-                  ],
-                ),
-              ],
+        child: ResponsiveWidget(
+          mobile: _buildMobileLayout(context, item),
+          tablet: _buildTabletLayout(context, item),
+          desktop: _buildDesktopLayout(context, item),
+          largeDesktop: _buildLargeDesktopLayout(context, item),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout(BuildContext context, Map<String, dynamic> item) {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: ResponsiveUtils.getResponsivePadding(context),
+        child: Column(
+          children: [
+            ResponsiveSpacing(mobileSpacing: 20),
+            _buildBackButton(context),
+            ResponsiveSpacing(mobileSpacing: 20),
+            _buildTitle(context),
+            ResponsiveSpacing(mobileSpacing: 20),
+            _buildContentCard(context, item),
+            ResponsiveSpacing(mobileSpacing: 30),
+            _buildNavigationButtons(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabletLayout(BuildContext context, Map<String, dynamic> item) {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: ResponsiveUtils.getResponsivePadding(context),
+        child: Column(
+          children: [
+            ResponsiveSpacing(mobileSpacing: 20),
+            _buildBackButton(context),
+            ResponsiveSpacing(mobileSpacing: 20),
+            _buildTitle(context),
+            ResponsiveSpacing(mobileSpacing: 20),
+            _buildContentCard(context, item),
+            ResponsiveSpacing(mobileSpacing: 30),
+            _buildNavigationButtons(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDesktopLayout(BuildContext context, Map<String, dynamic> item) {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: ResponsiveUtils.getResponsivePadding(context),
+        child: Column(
+          children: [
+            ResponsiveSpacing(mobileSpacing: 20),
+            _buildBackButton(context),
+            ResponsiveSpacing(mobileSpacing: 20),
+            _buildTitle(context),
+            ResponsiveSpacing(mobileSpacing: 20),
+            _buildContentCard(context, item),
+            ResponsiveSpacing(mobileSpacing: 30),
+            _buildNavigationButtons(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLargeDesktopLayout(BuildContext context, Map<String, dynamic> item) {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: ResponsiveUtils.getResponsivePadding(context),
+        child: Column(
+          children: [
+            ResponsiveSpacing(mobileSpacing: 20),
+            _buildBackButton(context),
+            ResponsiveSpacing(mobileSpacing: 20),
+            _buildTitle(context),
+            ResponsiveSpacing(mobileSpacing: 20),
+            _buildContentCard(context, item),
+            ResponsiveSpacing(mobileSpacing: 30),
+            _buildNavigationButtons(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackButton(BuildContext context) {
+    return Align(
+      alignment: Alignment.topLeft,
+      child: ElevatedButton(
+        onPressed: () => Navigator.pop(context),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF648BA2),
+          padding: ResponsiveUtils.getResponsivePadding(context),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 12),
             ),
           ),
         ),
+        child: ResponsiveText(
+          'Go Back',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+          mobileFontSize: 18,
+          tabletFontSize: 20,
+          desktopFontSize: 22,
+          largeDesktopFontSize: 24,
+        ),
       ),
+    );
+  }
+
+  Widget _buildTitle(BuildContext context) {
+    return Center(
+      child: ResponsiveText(
+        'Learn the Colors',
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF4A4E69),
+        ),
+        mobileFontSize: 28,
+        tabletFontSize: 32,
+        desktopFontSize: 36,
+        largeDesktopFontSize: 40,
+      ),
+    );
+  }
+
+  Widget _buildContentCard(BuildContext context, Map<String, dynamic> item) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 500),
+      transitionBuilder: (child, animation) {
+        final offsetAnimation = Tween<Offset>(
+          begin: _animationDirection == 'next'
+              ? const Offset(1.0, 0.0)
+              : _animationDirection == 'previous'
+                  ? const Offset(-1.0, 0.0)
+                  : Offset.zero,
+          end: Offset.zero,
+        ).animate(animation);
+        return SlideTransition(
+          position: offsetAnimation,
+          child: FadeTransition(
+            opacity: animation,
+            child: ScaleTransition(scale: _bounceAnimation, child: child),
+          ),
+        );
+      },
+      child: Container(
+        key: ValueKey<int>(currentIndex),
+        width: ResponsiveUtils.isSmallScreen(context) 
+          ? MediaQuery.of(context).size.width * 0.9
+          : ResponsiveUtils.getResponsiveIconSize(context, mobile: 600),
+        height: ResponsiveUtils.isSmallScreen(context) 
+          ? MediaQuery.of(context).size.width * 0.9
+          : ResponsiveUtils.getResponsiveIconSize(context, mobile: 600),
+        padding: ResponsiveUtils.getResponsivePadding(context),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(
+            ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 16),
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 10,
+              offset: Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ResponsiveText(
+                  item['type'] == 'color' ? item['name'] : 'Example',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF4A4E69),
+                  ),
+                  mobileFontSize: 24,
+                  tabletFontSize: 28,
+                  desktopFontSize: 32,
+                  largeDesktopFontSize: 36,
+                ),
+                ResponsiveSpacing(mobileSpacing: 10, isVertical: false),
+                IconButton(
+                  icon: ResponsiveIcon(
+                    Icons.volume_up,
+                    color: Color(0xFF648BA2),
+                    mobileSize: 32,
+                    tabletSize: 36,
+                    desktopSize: 40,
+                    largeDesktopSize: 44,
+                  ),
+                  onPressed: _speakContent,
+                ),
+              ],
+            ),
+            ResponsiveSpacing(mobileSpacing: 20),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(
+                ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 12),
+              ),
+              child: Image.asset(
+                item['image'],
+                height: ResponsiveUtils.isSmallScreen(context) 
+                  ? ResponsiveUtils.getResponsiveIconSize(context, mobile: 200)
+                  : ResponsiveUtils.getResponsiveIconSize(context, mobile: 350),
+                width: ResponsiveUtils.isSmallScreen(context) 
+                  ? ResponsiveUtils.getResponsiveIconSize(context, mobile: 200)
+                  : ResponsiveUtils.getResponsiveIconSize(context, mobile: 400),
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => ResponsiveIcon(
+                  Icons.broken_image,
+                  color: Colors.red,
+                  mobileSize: 60,
+                  tabletSize: 70,
+                  desktopSize: 80,
+                  largeDesktopSize: 90,
+                ),
+              ),
+            ),
+            if (item['type'] == 'example') ...[
+              ResponsiveSpacing(mobileSpacing: 20),
+              ResponsiveText(
+                item['description'],
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF4A4E69),
+                ),
+                mobileFontSize: 16,
+                tabletFontSize: 18,
+                desktopFontSize: 20,
+                largeDesktopFontSize: 22,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavigationButtons(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        ElevatedButton(
+          onPressed: currentIndex == 0 ? null : _previousColor,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: currentIndex == 0 ? Colors.grey : const Color(0xFF648BA2),
+            padding: ResponsiveUtils.getResponsivePadding(context),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 12),
+              ),
+            ),
+          ),
+          child: ResponsiveText(
+            'Previous',
+            style: TextStyle(color: Colors.white),
+            mobileFontSize: 16,
+            tabletFontSize: 18,
+            desktopFontSize: 20,
+            largeDesktopFontSize: 22,
+          ),
+        ),
+        ResponsiveSpacing(mobileSpacing: 15, isVertical: false),
+        ElevatedButton(
+          onPressed: _nextColor,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF648BA2),
+            padding: ResponsiveUtils.getResponsivePadding(context),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 12),
+              ),
+            ),
+          ),
+          child: ResponsiveText(
+            'Next',
+            style: TextStyle(color: Colors.white),
+            mobileFontSize: 16,
+            tabletFontSize: 18,
+            desktopFontSize: 20,
+            largeDesktopFontSize: 22,
+          ),
+        ),
+      ],
     );
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'interactive_focus_widget.dart';
 import 'attention_focus_system.dart';
+import 'responsive_utils.dart';
 
 /// Demo page to showcase the Focus/Attention System
 class FocusSystemDemo extends StatefulWidget {
@@ -97,33 +98,39 @@ class _FocusSystemDemoState extends State<FocusSystemDemo> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: const Text(
+        title: ResponsiveText(
           "Focus System Demo 🧠",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
+          mobileFontSize: 18,
+          tabletFontSize: 20,
+          desktopFontSize: 22,
+          largeDesktopFontSize: 24,
         ),
         backgroundColor: Colors.blue.shade600,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: ResponsiveUtils.getResponsivePadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(20),
+              padding: ResponsiveUtils.getResponsivePadding(context),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Colors.blue.shade400, Colors.purple.shade400],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(
+                  ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 20),
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.blue.shade200,
@@ -134,36 +141,45 @@ class _FocusSystemDemoState extends State<FocusSystemDemo> {
               ),
               child: Column(
                 children: [
-                  const Icon(
+                  ResponsiveIcon(
                     Icons.psychology,
                     color: Colors.white,
-                    size: 48,
+                    mobileSize: 40,
+                    tabletSize: 44,
+                    desktopSize: 48,
+                    largeDesktopSize: 52,
                   ),
-                  const SizedBox(height: 10),
-                  const Text(
+                  ResponsiveSpacing(mobileSpacing: 10),
+                  ResponsiveText(
                     "Focus/Attention System",
                     style: TextStyle(
-                      fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
+                    mobileFontSize: 20,
+                    tabletFontSize: 22,
+                    desktopFontSize: 24,
+                    largeDesktopFontSize: 26,
                   ),
-                  const SizedBox(height: 5),
-                  Text(
+                  ResponsiveSpacing(mobileSpacing: 5),
+                  ResponsiveText(
                     "Test the interactive focus features!",
                     style: TextStyle(
-                      fontSize: 16,
                       color: Colors.white.withValues(alpha: 0.9),
                     ),
+                    mobileFontSize: 14,
+                    tabletFontSize: 16,
+                    desktopFontSize: 18,
+                    largeDesktopFontSize: 20,
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 30),
+            ResponsiveSpacing(mobileSpacing: 30),
 
             // Interactive Focus Widget
-            const Text(
+            ResponsiveText(
               "🎯 Interactive Focus Widget",
               style: TextStyle(
                 fontSize: 20,

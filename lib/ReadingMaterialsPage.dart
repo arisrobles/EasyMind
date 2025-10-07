@@ -3,7 +3,8 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'functional_academics.dart';
 import 'communication_skills.dart';
 import 'prevocational_skills.dart';
-import 'progress_dashboard.dart';
+import 'unified_analytics_dashboard.dart';
+import 'responsive_utils.dart';
 
 class Readingmaterialspage extends StatefulWidget {
   final String nickname;
@@ -49,131 +50,227 @@ class _ReadingmaterialspageState extends State<Readingmaterialspage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFEFE9D5),
-      body: OrientationBuilder(
-        builder: (context, orientation) {
-          return Stack(
+      body: ResponsiveWidget(
+        mobile: _buildMobileLayout(context),
+        tablet: _buildTabletLayout(context),
+        desktop: _buildDesktopLayout(context),
+        largeDesktop: _buildLargeDesktopLayout(context),
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout(BuildContext context) {
+    return Stack(
+      children: [
+        ClipPath(
+          clipper: TopWaveClipper(),
+          child: Container(
+            height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 200),
+            width: double.infinity,
+            color: const Color(0xFFFBEED9),
+          ),
+        ),
+        Padding(
+          padding: ResponsiveUtils.getResponsivePadding(context),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ClipPath(
-                clipper: TopWaveClipper(),
-                child: Container(
-                  height: 200,
-                  width: double.infinity,
-                  color: const Color(0xFFFBEED9),
+              _buildHeader(context),
+              ResponsiveSpacing(mobileSpacing: 120),
+              Expanded(
+                child: _buildSubjectGrid(context, crossAxisCount: 1),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTabletLayout(BuildContext context) {
+    return Stack(
+      children: [
+        ClipPath(
+          clipper: TopWaveClipper(),
+          child: Container(
+            height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 220),
+            width: double.infinity,
+            color: const Color(0xFFFBEED9),
+          ),
+        ),
+        Padding(
+          padding: ResponsiveUtils.getResponsivePadding(context),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(context),
+              ResponsiveSpacing(mobileSpacing: 140),
+              Expanded(
+                child: _buildSubjectGrid(context, crossAxisCount: 2),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDesktopLayout(BuildContext context) {
+    return Stack(
+      children: [
+        ClipPath(
+          clipper: TopWaveClipper(),
+          child: Container(
+            height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 240),
+            width: double.infinity,
+            color: const Color(0xFFFBEED9),
+          ),
+        ),
+        Padding(
+          padding: ResponsiveUtils.getResponsivePadding(context),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(context),
+              ResponsiveSpacing(mobileSpacing: 160),
+              Expanded(
+                child: _buildSubjectGrid(context, crossAxisCount: 3),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLargeDesktopLayout(BuildContext context) {
+    return Stack(
+      children: [
+        ClipPath(
+          clipper: TopWaveClipper(),
+          child: Container(
+            height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 260),
+            width: double.infinity,
+            color: const Color(0xFFFBEED9),
+          ),
+        ),
+        Padding(
+          padding: ResponsiveUtils.getResponsivePadding(context),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(context),
+              ResponsiveSpacing(mobileSpacing: 180),
+              Expanded(
+                child: _buildSubjectGrid(context, crossAxisCount: 4),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+          height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 50),
+          width: ResponsiveUtils.getResponsiveIconSize(context, mobile: 150),
+          child: ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF648BA2),
+              padding: EdgeInsets.symmetric(
+                vertical: ResponsiveUtils.getResponsiveSpacing(context, mobile: 15),
+                horizontal: ResponsiveUtils.getResponsiveSpacing(context, mobile: 20),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                  ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 12),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                  vertical: 30.0,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        SizedBox(
-                          height: 60,
-                          width: 180,
-                          child: ElevatedButton(
-                            onPressed: () => Navigator.pop(context),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF648BA2),
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 15,
-                                horizontal: 20,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text(
-                              'Go Back',
-                              style: TextStyle(
-                                fontSize: 25,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 20),
-                        SizedBox(
-                          height: 60,
-                          width: 200,
-                          child: ElevatedButton.icon(
-                            onPressed: () async {
-                              await flutterTts.speak("Progress Dashboard");
+            ),
+            child: ResponsiveText(
+              'Go Back',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              mobileFontSize: 20,
+              tabletFontSize: 22,
+              desktopFontSize: 24,
+              largeDesktopFontSize: 26,
+            ),
+          ),
+        ),
+        ResponsiveSpacing(mobileSpacing: 20, isVertical: false),
+        SizedBox(
+          height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 50),
+          width: ResponsiveUtils.getResponsiveIconSize(context, mobile: 180),
+          child: ElevatedButton.icon(
+            onPressed: () async {
+              await flutterTts.speak("Progress Dashboard");
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => ProgressDashboard(
+                                  builder: (context) => UnifiedAnalyticsDashboard(
                                     nickname: widget.nickname,
                                   ),
                                 ),
                               );
-                            },
-                            icon: const Icon(Icons.analytics, color: Colors.white),
-                            label: const Text(
-                              '📊 Progress',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF3C7E71),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 120),
-                    Expanded(
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          double maxWidth = constraints.maxWidth;
-                          int columns =
-                              MediaQuery.of(context).orientation ==
-                                      Orientation.portrait
-                                  ? 1
-                                  : 3;
-                          double maxExtent = maxWidth / columns + 80;
-                          double gridWidth = maxWidth > 1200 ? 1200 : maxWidth;
-
-                          return Center(
-                            child: SizedBox(
-                              width: gridWidth,
-                              child: GridView(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 10,
-                                  horizontal: 10,
-                                ),
-                                shrinkWrap: true,
-                                gridDelegate:
-                                    SliverGridDelegateWithMaxCrossAxisExtent(
-                                      maxCrossAxisExtent: maxExtent,
-                                      crossAxisSpacing: 40,
-                                      mainAxisSpacing: 30,
-                                      childAspectRatio: 0.75,
-                                    ),
-                                children: _buildSubjectCards(context),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+            },
+            icon: ResponsiveIcon(
+              Icons.analytics,
+              color: Colors.white,
+              mobileSize: 20,
+              tabletSize: 22,
+              desktopSize: 24,
+              largeDesktopSize: 26,
+            ),
+            label: ResponsiveText(
+              '📊 Progress',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              mobileFontSize: 16,
+              tabletFontSize: 18,
+              desktopFontSize: 20,
+              largeDesktopFontSize: 22,
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF3C7E71),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                  ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 12),
                 ),
               ),
-            ],
-          );
-        },
-      ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSubjectGrid(BuildContext context, {required int crossAxisCount}) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return GridView(
+          padding: ResponsiveUtils.getResponsivePadding(context),
+          shrinkWrap: ResponsiveUtils.isSmallScreen(context) ? false : true,
+          physics: ResponsiveUtils.isSmallScreen(context) 
+            ? const AlwaysScrollableScrollPhysics() 
+            : const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: ResponsiveUtils.getResponsiveSpacing(context, mobile: 15),
+            mainAxisSpacing: ResponsiveUtils.getResponsiveSpacing(context, mobile: 15),
+            childAspectRatio: ResponsiveUtils.isSmallScreen(context) ? 1.0 : 0.85,
+          ),
+          children: _buildSubjectCards(context),
+        );
+      },
     );
   }
 
@@ -235,7 +332,9 @@ class _ReadingmaterialspageState extends State<Readingmaterialspage> {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(
+            ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 30),
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.15),
@@ -245,22 +344,42 @@ class _ReadingmaterialspageState extends State<Readingmaterialspage> {
             ),
           ],
         ),
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(
+          ResponsiveUtils.getResponsiveSpacing(context, mobile: 16),
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Image.asset(imagePath, height: 320, fit: BoxFit.contain),
+            Flexible(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(
+                  ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 20),
+                ),
+                child: Image.asset(
+                  imagePath,
+                  height: ResponsiveUtils.isSmallScreen(context) 
+                    ? ResponsiveUtils.getResponsiveIconSize(context, mobile: 150)
+                    : ResponsiveUtils.getResponsiveIconSize(context, mobile: 200),
+                  fit: BoxFit.contain,
+                ),
+              ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF4A4E69),
+            ResponsiveSpacing(mobileSpacing: 8),
+            Flexible(
+              child: ResponsiveText(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF4A4E69),
+                ),
+                mobileFontSize: 16,
+                tabletFontSize: 18,
+                desktopFontSize: 20,
+                largeDesktopFontSize: 22,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

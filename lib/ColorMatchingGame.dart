@@ -5,6 +5,7 @@ import 'adaptive_assessment_system.dart';
 import 'memory_retention_system.dart';
 import 'gamification_system.dart';
 import 'visit_tracking_system.dart';
+import 'responsive_utils.dart';
 
 class ColorMatchingGame extends StatelessWidget {
   final String nickname;
@@ -366,48 +367,100 @@ class _ColorGameScreenState extends State<ColorGameScreen>
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final isSmallScreen = screenWidth < 600;
-
     if (gameCompleted) {
-      return _buildCompletionScreen(screenWidth, screenHeight, isSmallScreen);
+      return _buildCompletionScreen(context);
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F4FF), // Softer, more kid-friendly background
+      backgroundColor: const Color(0xFFF8F4FF),
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(isSmallScreen ? 12.0 : 16.0), // Reduced padding
-          child: Column(
-            children: [
-              // Header
-              _buildHeader(screenWidth, screenHeight, isSmallScreen),
-              
-              const SizedBox(height: 10), // Further reduced spacing
-              
-              // Question (moved higher)
-              _buildQuestion(screenWidth, screenHeight, isSmallScreen),
-              
-              const SizedBox(height: 15), // Further reduced spacing
-              
-              // Progress indicator (moved below question)
-              _buildProgressIndicator(screenWidth, isSmallScreen),
-              
-              const SizedBox(height: 15), // Further reduced spacing
-              
-              // Color options
-              Expanded(
-                child: _buildColorOptions(screenWidth, screenHeight, isSmallScreen),
-              ),
-            ],
-          ),
+        child: ResponsiveWidget(
+          mobile: _buildMobileLayout(context),
+          tablet: _buildTabletLayout(context),
+          desktop: _buildDesktopLayout(context),
+          largeDesktop: _buildLargeDesktopLayout(context),
         ),
       ),
     );
   }
 
-  Widget _buildHeader(double screenWidth, double screenHeight, bool isSmallScreen) {
+  Widget _buildMobileLayout(BuildContext context) {
+    return Padding(
+      padding: ResponsiveUtils.getResponsivePadding(context),
+      child: Column(
+        children: [
+          _buildHeader(context),
+          ResponsiveSpacing(mobileSpacing: 10),
+          _buildQuestion(context),
+          ResponsiveSpacing(mobileSpacing: 15),
+          _buildProgressIndicator(context),
+          ResponsiveSpacing(mobileSpacing: 15),
+          Expanded(
+            child: _buildColorOptions(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabletLayout(BuildContext context) {
+    return Padding(
+      padding: ResponsiveUtils.getResponsivePadding(context),
+      child: Column(
+        children: [
+          _buildHeader(context),
+          ResponsiveSpacing(mobileSpacing: 15),
+          _buildQuestion(context),
+          ResponsiveSpacing(mobileSpacing: 20),
+          _buildProgressIndicator(context),
+          ResponsiveSpacing(mobileSpacing: 20),
+          Expanded(
+            child: _buildColorOptions(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDesktopLayout(BuildContext context) {
+    return Padding(
+      padding: ResponsiveUtils.getResponsivePadding(context),
+      child: Column(
+        children: [
+          _buildHeader(context),
+          ResponsiveSpacing(mobileSpacing: 20),
+          _buildQuestion(context),
+          ResponsiveSpacing(mobileSpacing: 25),
+          _buildProgressIndicator(context),
+          ResponsiveSpacing(mobileSpacing: 25),
+          Expanded(
+            child: _buildColorOptions(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLargeDesktopLayout(BuildContext context) {
+    return Padding(
+      padding: ResponsiveUtils.getResponsivePadding(context),
+      child: Column(
+        children: [
+          _buildHeader(context),
+          ResponsiveSpacing(mobileSpacing: 25),
+          _buildQuestion(context),
+          ResponsiveSpacing(mobileSpacing: 30),
+          _buildProgressIndicator(context),
+          ResponsiveSpacing(mobileSpacing: 30),
+          Expanded(
+            child: _buildColorOptions(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -423,29 +476,41 @@ class _ColorGameScreenState extends State<ColorGameScreen>
             }
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF6B73FF), // More vibrant color
+            backgroundColor: const Color(0xFF6B73FF),
             padding: EdgeInsets.symmetric(
-              vertical: screenHeight * 0.02,
-              horizontal: screenWidth * 0.05,
+              vertical: ResponsiveUtils.getResponsiveSpacing(context, mobile: 12),
+              horizontal: ResponsiveUtils.getResponsiveSpacing(context, mobile: 20),
             ),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20), // More rounded
+              borderRadius: BorderRadius.circular(
+                ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 20),
+              ),
             ),
-            elevation: 8, // Add elevation for depth
-            shadowColor: const Color(0xFF6B73FF).withOpacity(0.4),
+            elevation: 8,
+            shadowColor: const Color(0xFF6B73FF).withValues(alpha: 0.4),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.arrow_back, color: Colors.white, size: 20),
-              const SizedBox(width: 8),
-              Text(
+              ResponsiveIcon(
+                Icons.arrow_back,
+                color: Colors.white,
+                mobileSize: 18,
+                tabletSize: 20,
+                desktopSize: 22,
+                largeDesktopSize: 24,
+              ),
+              ResponsiveSpacing(mobileSpacing: 8, isVertical: false),
+              ResponsiveText(
                 'Go Back',
                 style: TextStyle(
-                  fontSize: isSmallScreen ? 16 : 20,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
+                mobileFontSize: 14,
+                tabletFontSize: 16,
+                desktopFontSize: 18,
+                largeDesktopFontSize: 20,
               ),
             ],
           ),
@@ -454,8 +519,8 @@ class _ColorGameScreenState extends State<ColorGameScreen>
         // Level indicator
         Container(
           padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.04,
-            vertical: screenHeight * 0.015,
+            horizontal: ResponsiveUtils.getResponsiveSpacing(context, mobile: 16),
+            vertical: ResponsiveUtils.getResponsiveSpacing(context, mobile: 8),
           ),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
@@ -463,10 +528,12 @@ class _ColorGameScreenState extends State<ColorGameScreen>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(25), // More rounded
+            borderRadius: BorderRadius.circular(
+              ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 25),
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.purple.withOpacity(0.3),
+                color: Colors.purple.withValues(alpha: 0.3),
                 spreadRadius: 1,
                 blurRadius: 8,
                 offset: const Offset(0, 3),
@@ -476,15 +543,25 @@ class _ColorGameScreenState extends State<ColorGameScreen>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.star, color: Colors.white, size: 20),
-              const SizedBox(width: 8),
-              Text(
+              ResponsiveIcon(
+                Icons.star,
+                color: Colors.white,
+                mobileSize: 18,
+                tabletSize: 20,
+                desktopSize: 22,
+                largeDesktopSize: 24,
+              ),
+              ResponsiveSpacing(mobileSpacing: 8, isVertical: false),
+              ResponsiveText(
                 'Level ${currentLevel + 1}',
                 style: TextStyle(
-                  fontSize: isSmallScreen ? 16 : 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
+                mobileFontSize: 14,
+                tabletFontSize: 16,
+                desktopFontSize: 18,
+                largeDesktopFontSize: 20,
               ),
             ],
           ),
@@ -493,9 +570,9 @@ class _ColorGameScreenState extends State<ColorGameScreen>
     );
   }
 
-  Widget _buildProgressIndicator(double screenWidth, bool isSmallScreen) {
+  Widget _buildProgressIndicator(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
+      padding: ResponsiveUtils.getResponsivePadding(context),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFFFFFFFF), Color(0xFFF8F4FF)],
@@ -524,7 +601,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
               Text(
                 '📊 Progress',
                 style: TextStyle(
-                  fontSize: isSmallScreen ? 16 : 20, // Increased from 16/20
+                  fontSize: ResponsiveUtils.isSmallScreen(context) ? 16 : 20, // Increased from 16/20
                   fontWeight: FontWeight.bold,
                   color: const Color(0xFF2C3E50),
                 ),
@@ -532,7 +609,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
               Text(
                 '${currentQuestionIndex + 1} / $totalQuestions',
                 style: TextStyle(
-                  fontSize: isSmallScreen ? 14 : 16, // Increased from 12/14
+                  fontSize: ResponsiveUtils.isSmallScreen(context) ? 14 : 16, // Increased from 12/14
                   fontWeight: FontWeight.bold,
                   color: const Color(0xFF9B59B6),
                 ),
@@ -544,7 +621,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
             value: currentQuestionIndex / totalQuestions,
             backgroundColor: Colors.grey[200],
             valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF9B59B6)),
-            minHeight: isSmallScreen ? 8 : 10, // Increased from 6/8
+            minHeight: ResponsiveUtils.isSmallScreen(context) ? 8 : 10, // Increased from 6/8
             borderRadius: BorderRadius.circular(5),
           ),
         ],
@@ -552,12 +629,12 @@ class _ColorGameScreenState extends State<ColorGameScreen>
     );
   }
 
-  Widget _buildQuestion(double screenWidth, double screenHeight, bool isSmallScreen) {
+  Widget _buildQuestion(BuildContext context) {
     if (currentQuestion == null) return const SizedBox.shrink();
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(isSmallScreen ? 15 : 20), // Reduced padding
+      padding: EdgeInsets.all(ResponsiveUtils.isSmallScreen(context) ? 15 : 20), // Reduced padding
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFFFFFFFF), Color(0xFFF0F8FF)],
@@ -583,7 +660,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
           Text(
             isDragDropMode ? '🎯 Drag the color to the shape:' : '🔍 Find the color:',
             style: TextStyle(
-              fontSize: isSmallScreen ? 20 : 24,
+              fontSize: ResponsiveUtils.isSmallScreen(context) ? 20 : 24,
               fontWeight: FontWeight.bold,
               color: const Color(0xFF2C3E50),
             ),
@@ -605,8 +682,8 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                 
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  width: isSmallScreen ? 80 : 100,
-                  height: isSmallScreen ? 80 : 100,
+                  width: ResponsiveUtils.isSmallScreen(context) ? 80 : 100,
+                  height: ResponsiveUtils.isSmallScreen(context) ? 80 : 100,
                   decoration: BoxDecoration(
                     color: _getColorByName(currentQuestion!['target']),
                     borderRadius: BorderRadius.circular(20),
@@ -658,7 +735,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                   child: Text(
                     currentQuestion!['target'],
                     style: TextStyle(
-                      fontSize: isSmallScreen ? 36 : 44,
+                      fontSize: ResponsiveUtils.isSmallScreen(context) ? 36 : 44,
                       fontWeight: FontWeight.bold,
                       color: _getColorByName(currentQuestion!['target']),
                       shadows: [
@@ -690,7 +767,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
               ),
               child: Icon(
                 Icons.volume_up,
-                size: isSmallScreen ? 36 : 44,
+                size: ResponsiveUtils.isSmallScreen(context) ? 36 : 44,
                 color: const Color(0xFF6B73FF),
               ),
             ),
@@ -700,7 +777,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
     );
   }
 
-  Widget _buildColorOptions(double screenWidth, double screenHeight, bool isSmallScreen) {
+  Widget _buildColorOptions(BuildContext context) {
     if (currentQuestion == null) return const SizedBox.shrink();
 
     return Column(
@@ -710,8 +787,8 @@ class _ColorGameScreenState extends State<ColorGameScreen>
           child: GridView.builder(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              crossAxisSpacing: isSmallScreen ? 15 : 20, // Reduced from 20/25 to 15/20
-              mainAxisSpacing: isSmallScreen ? 15 : 20, // Reduced from 20/25 to 15/20
+              crossAxisSpacing: ResponsiveUtils.isSmallScreen(context) ? 15 : 20, // Reduced from 20/25 to 15/20
+              mainAxisSpacing: ResponsiveUtils.isSmallScreen(context) ? 15 : 20, // Reduced from 20/25 to 15/20
               childAspectRatio: 1.0,
             ),
             itemCount: currentQuestion!['options'].length,
@@ -721,8 +798,8 @@ class _ColorGameScreenState extends State<ColorGameScreen>
               final isCorrect = colorName == currentQuestion!['target'];
               
               Widget colorShape = Container(
-                width: isSmallScreen ? 70 : 80, // Same size as target
-                height: isSmallScreen ? 70 : 80, // Same size as target
+                width: ResponsiveUtils.isSmallScreen(context) ? 70 : 80, // Same size as target
+                height: ResponsiveUtils.isSmallScreen(context) ? 70 : 80, // Same size as target
                 decoration: BoxDecoration(
                   color: _getColorByName(colorName),
                   borderRadius: BorderRadius.circular(20), // Same rounded corners as target
@@ -749,8 +826,8 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                   feedback: Transform.scale(
                     scale: 1.2,
                     child: Container(
-                      width: isSmallScreen ? 70 : 80,
-                      height: isSmallScreen ? 70 : 80,
+                      width: ResponsiveUtils.isSmallScreen(context) ? 70 : 80,
+                      height: ResponsiveUtils.isSmallScreen(context) ? 70 : 80,
                       decoration: BoxDecoration(
                         color: _getColorByName(colorName),
                         borderRadius: BorderRadius.circular(20), // Same rounded corners as target
@@ -770,8 +847,8 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                     ),
                   ),
                   childWhenDragging: Container(
-                    width: isSmallScreen ? 70 : 80,
-                    height: isSmallScreen ? 70 : 80,
+                    width: ResponsiveUtils.isSmallScreen(context) ? 70 : 80,
+                    height: ResponsiveUtils.isSmallScreen(context) ? 70 : 80,
                     decoration: BoxDecoration(
                       color: _getColorByName(colorName).withOpacity(0.3),
                       borderRadius: BorderRadius.circular(20), // Same rounded corners as target
@@ -822,7 +899,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                         ],
                       ),
                     child: Padding(
-                      padding: EdgeInsets.all(isSmallScreen ? 8 : 12), // Added padding to make containers smaller
+                      padding: EdgeInsets.all(ResponsiveUtils.isSmallScreen(context) ? 8 : 12), // Added padding to make containers smaller
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -832,7 +909,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                             Icon(
                               isCorrect ? Icons.check_circle : Icons.cancel,
                               color: isCorrect ? Colors.green : Colors.red,
-                              size: isSmallScreen ? 20 : 24, // Further reduced from 24/28 to 20/24
+                              size: ResponsiveUtils.isSmallScreen(context) ? 20 : 24, // Further reduced from 24/28 to 20/24
                             ),
                           ],
                         ],
@@ -867,7 +944,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                       ],
                     ),
                     child: Padding(
-                      padding: EdgeInsets.all(isSmallScreen ? 8 : 12), // Added padding to make containers smaller
+                      padding: EdgeInsets.all(ResponsiveUtils.isSmallScreen(context) ? 8 : 12), // Added padding to make containers smaller
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -877,7 +954,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                             Icon(
                               isCorrect ? Icons.check_circle : Icons.cancel,
                               color: isCorrect ? Colors.green : Colors.red,
-                              size: isSmallScreen ? 20 : 24, // Further reduced from 24/28 to 20/24
+                              size: ResponsiveUtils.isSmallScreen(context) ? 20 : 24, // Further reduced from 24/28 to 20/24
                             ),
                           ],
                         ],
@@ -893,7 +970,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
     );
   }
 
-  Widget _buildCompletionScreen(double screenWidth, double screenHeight, bool isSmallScreen) {
+  Widget _buildCompletionScreen(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F4FF), // Match main screen background
       body: SafeArea(
@@ -918,14 +995,14 @@ class _ColorGameScreenState extends State<ColorGameScreen>
             
             // Content
             Padding(
-              padding: EdgeInsets.all(isSmallScreen ? 20 : 30),
+              padding: EdgeInsets.all(ResponsiveUtils.isSmallScreen(context) ? 20 : 30),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Celebration icon
                   Icon(
                     Icons.celebration,
-                    size: isSmallScreen ? 80 : 100,
+                    size: ResponsiveUtils.isSmallScreen(context) ? 80 : 100,
                     color: Colors.amber,
                   ),
                   
@@ -935,7 +1012,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                   Text(
                     '🎉 Congratulations! 🎉',
                     style: TextStyle(
-                      fontSize: isSmallScreen ? 28 : 36,
+                      fontSize: ResponsiveUtils.isSmallScreen(context) ? 28 : 36,
                       fontWeight: FontWeight.bold,
                       color: const Color(0xFF2C3E50),
                     ),
@@ -948,7 +1025,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                   Text(
                     'You completed all color levels!',
                     style: TextStyle(
-                      fontSize: isSmallScreen ? 18 : 22,
+                      fontSize: ResponsiveUtils.isSmallScreen(context) ? 18 : 22,
                       color: const Color(0xFF2C3E50),
                     ),
                     textAlign: TextAlign.center,
@@ -958,7 +1035,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                   
                   // Final score
                   Container(
-                    padding: EdgeInsets.all(isSmallScreen ? 20 : 30),
+                    padding: EdgeInsets.all(ResponsiveUtils.isSmallScreen(context) ? 20 : 30),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFFFFFFFF), Color(0xFFF0F8FF)],
@@ -984,7 +1061,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                         Text(
                           '🏆 Final Results 🏆',
                           style: TextStyle(
-                            fontSize: isSmallScreen ? 22 : 28,
+                            fontSize: ResponsiveUtils.isSmallScreen(context) ? 22 : 28,
                             fontWeight: FontWeight.bold,
                             color: const Color(0xFF2C3E50),
                           ),
@@ -1000,21 +1077,21 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                               '$score',
                               Icons.star,
                               const Color(0xFF6B73FF),
-                              isSmallScreen,
+                              context,
                             ),
                             _buildCompletionScoreItem(
                               'Correct',
                               '$correctAnswers/$totalQuestions',
                               Icons.check_circle,
                               const Color(0xFF4CAF50),
-                              isSmallScreen,
+                              context,
                             ),
                             _buildCompletionScoreItem(
                               'Level',
                               '${currentLevel + 1}',
                               Icons.trending_up,
                               const Color(0xFF9B59B6),
-                              isSmallScreen,
+                              context,
                             ),
                           ],
                         ),
@@ -1038,14 +1115,14 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                               Icon(
                                 _getPerformanceIcon(),
                                 color: _getPerformanceColor(),
-                                size: isSmallScreen ? 24 : 28,
+                                size: ResponsiveUtils.isSmallScreen(context) ? 24 : 28,
                               ),
                               const SizedBox(width: 10),
                               Flexible(
                                 child: Text(
                                   _getPerformanceMessage(),
                                   style: TextStyle(
-                                    fontSize: isSmallScreen ? 16 : 18,
+                                    fontSize: ResponsiveUtils.isSmallScreen(context) ? 16 : 18,
                                     fontWeight: FontWeight.bold,
                                     color: _getPerformanceColor(),
                                   ),
@@ -1064,7 +1141,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                   // Gamification reward
                   if (_lastReward != null) ...[
                     Container(
-                      padding: EdgeInsets.all(isSmallScreen ? 15 : 20),
+                      padding: EdgeInsets.all(ResponsiveUtils.isSmallScreen(context) ? 15 : 20),
                       decoration: BoxDecoration(
                         color: const Color(0xFF4A4E69),
                         borderRadius: BorderRadius.circular(15),
@@ -1074,7 +1151,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                           Text(
                             '🏆 Rewards Earned! 🏆',
                             style: TextStyle(
-                              fontSize: isSmallScreen ? 18 : 22,
+                              fontSize: ResponsiveUtils.isSmallScreen(context) ? 18 : 22,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -1083,7 +1160,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                           Text(
                             '${_lastReward!.xpAwarded} XP gained!',
                             style: TextStyle(
-                              fontSize: isSmallScreen ? 16 : 18,
+                              fontSize: ResponsiveUtils.isSmallScreen(context) ? 16 : 18,
                               color: Colors.white,
                             ),
                           ),
@@ -1092,7 +1169,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                             Text(
                               'Level Up! 🎉',
                               style: TextStyle(
-                                fontSize: isSmallScreen ? 16 : 18,
+                                fontSize: ResponsiveUtils.isSmallScreen(context) ? 16 : 18,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.amber,
                               ),
@@ -1113,8 +1190,8 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF648BA2),
                           padding: EdgeInsets.symmetric(
-                            horizontal: screenWidth * 0.08,
-                            vertical: screenHeight * 0.02,
+                            horizontal: MediaQuery.of(context).size.width * 0.08,
+                            vertical: MediaQuery.of(context).size.height * 0.02,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
@@ -1123,7 +1200,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                         child: Text(
                           'Play Again',
                           style: TextStyle(
-                            fontSize: isSmallScreen ? 16 : 20,
+                            fontSize: ResponsiveUtils.isSmallScreen(context) ? 16 : 20,
                             color: Colors.white,
                           ),
                         ),
@@ -1141,8 +1218,8 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF4A4E69),
                           padding: EdgeInsets.symmetric(
-                            horizontal: screenWidth * 0.08,
-                            vertical: screenHeight * 0.02,
+                            horizontal: MediaQuery.of(context).size.width * 0.08,
+                            vertical: MediaQuery.of(context).size.height * 0.02,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
@@ -1151,7 +1228,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
                         child: Text(
                           'Back to Games',
                           style: TextStyle(
-                            fontSize: isSmallScreen ? 16 : 20,
+                            fontSize: ResponsiveUtils.isSmallScreen(context) ? 16 : 20,
                             color: Colors.white,
                           ),
                         ),
@@ -1167,7 +1244,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
     );
   }
 
-  Widget _buildCompletionScoreItem(String label, String value, IconData icon, Color color, bool isSmallScreen) {
+  Widget _buildCompletionScoreItem(String label, String value, IconData icon, Color color, BuildContext context) {
     return Column(
       children: [
         Container(
@@ -1183,14 +1260,14 @@ class _ColorGameScreenState extends State<ColorGameScreen>
           child: Icon(
             icon,
             color: color,
-            size: isSmallScreen ? 20 : 24,
+            size: ResponsiveUtils.isSmallScreen(context) ? 20 : 24,
           ),
         ),
         const SizedBox(height: 8),
         Text(
           label,
           style: TextStyle(
-            fontSize: isSmallScreen ? 12 : 14,
+            fontSize: ResponsiveUtils.isSmallScreen(context) ? 12 : 14,
             color: const Color(0xFF2C3E50),
             fontWeight: FontWeight.w500,
           ),
@@ -1198,7 +1275,7 @@ class _ColorGameScreenState extends State<ColorGameScreen>
         Text(
           value,
           style: TextStyle(
-            fontSize: isSmallScreen ? 16 : 18,
+            fontSize: ResponsiveUtils.isSmallScreen(context) ? 16 : 18,
             fontWeight: FontWeight.bold,
             color: color,
           ),

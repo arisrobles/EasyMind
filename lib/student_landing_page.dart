@@ -9,6 +9,7 @@ import 'unified_analytics_dashboard.dart';
 import 'focus_system_demo.dart';
 import 'app_initialization_service.dart';
 import 'student_profile.dart';
+import 'responsive_utils.dart';
 
 class StudentLandingPage extends StatefulWidget {
   final String nickname;
@@ -181,248 +182,394 @@ class _StudentLandingPageState extends State<StudentLandingPage> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 600;
-    final isVerySmallScreen = screenWidth < 400;
-
     return Scaffold(
       backgroundColor: const Color(0xFFEFE9D5),
-      body: Column(
-        children: [
-          // Responsive Header
-          Stack(
-            children: [
-              ClipPath(
-                clipper: TopWaveClipper(),
-                child: Container(
-                  height: isSmallScreen ? 150 : 200,
-                  width: double.infinity,
-                  color: const Color(0xFFFBEED9),
-                ),
+      body: ResponsiveWidget(
+        mobile: _buildMobileLayout(context),
+        tablet: _buildTabletLayout(context),
+        desktop: _buildDesktopLayout(context),
+        largeDesktop: _buildLargeDesktopLayout(context),
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout(BuildContext context) {
+    return Column(
+      children: [
+        _buildHeader(context),
+        Expanded(
+          child: Padding(
+            padding: ResponsiveUtils.getResponsivePadding(context),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  ReviewReminderWidget(
+                    nickname: widget.nickname,
+                    onReviewCompleted: () {
+                      setState(() {});
+                    },
+                  ),
+                  ResponsiveSpacing(mobileSpacing: 20),
+                  _buildIconButtons(context),
+                  ResponsiveSpacing(mobileSpacing: 30),
+                  _buildMainCards(context),
+                ],
               ),
-              Positioned(
-                top: isSmallScreen ? 40 : 60,
-                left: isSmallScreen ? 20 : 40,
-                right: isSmallScreen ? 20 : 40,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Hello, ${widget.nickname}! 👋',
-                            style: TextStyle(
-                              fontSize: isVerySmallScreen ? 28 : (isSmallScreen ? 32 : 45),
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF4A4E69),
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Ready to learn and have fun? 🌟',
-                            style: TextStyle(
-                              fontSize: isVerySmallScreen ? 14 : (isSmallScreen ? 16 : 18),
-                              color: const Color(0xFF648BA2),
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Profile Icon in Header
-                    GestureDetector(
-                      onTap: () async {
-                        await _speak("My Profile");
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => StudentProfile(
-                              nickname: widget.nickname,
-                            ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          borderRadius: BorderRadius.circular(25),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTabletLayout(BuildContext context) {
+    return Column(
+      children: [
+        _buildHeader(context),
+        Expanded(
+          child: Padding(
+            padding: ResponsiveUtils.getResponsivePadding(context),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  ReviewReminderWidget(
+                    nickname: widget.nickname,
+                    onReviewCompleted: () {
+                      setState(() {});
+                    },
+                  ),
+                  ResponsiveSpacing(mobileSpacing: 30),
+                  _buildIconButtons(context),
+                  ResponsiveSpacing(mobileSpacing: 40),
+                  _buildMainCards(context),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDesktopLayout(BuildContext context) {
+    return Row(
+      children: [
+        // Sidebar for desktop
+        Container(
+          width: 300,
+          color: const Color(0xFFFBEED9),
+          child: Column(
+            children: [
+              _buildHeader(context),
+              Expanded(
+                child: Padding(
+                  padding: ResponsiveUtils.getResponsivePadding(context),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        ReviewReminderWidget(
+                          nickname: widget.nickname,
+                          onReviewCompleted: () {
+                            setState(() {});
+                          },
                         ),
-                        child: const Icon(
-                          Icons.person,
-                          color: Color(0xFF648BA2),
-                          size: 28,
-                        ),
-                      ),
+                        ResponsiveSpacing(mobileSpacing: 30),
+                        _buildIconButtons(context),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ],
           ),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.all(isSmallScreen ? 12.0 : 20.0),
-                child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                      // Review Reminder Widget - Shows lessons due for review
-                      ReviewReminderWidget(
-                        nickname: widget.nickname,
-                        onReviewCompleted: () {
-                          setState(() {
-                            // Refresh the page when reviews are completed
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      
-                      // Icon-Only Feature Buttons - Wrap Layout (No Overflow)
-                      Wrap(
-                        alignment: WrapAlignment.spaceEvenly,
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _buildIconOnlyButton(
-                            icon: Icons.analytics,
-                            emoji: "📊",
-                            color: const Color(0xFF648BA2),
-                            title: "Analytics Hub",
-                            onPressed: () async {
-                              await _speak("Analytics Hub");
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => UnifiedAnalyticsDashboard(
-                                    nickname: widget.nickname,
-                                  ),
-                                ),
-                              );
-                            },
-                            isSmallScreen: isSmallScreen,
-                          ),
-                          _buildIconOnlyButton(
-                            icon: Icons.timer,
-                            emoji: "⏰",
-                            color: const Color(0xFF9C27B0),
-                            title: "Focus System",
-                            onPressed: () async {
-                              await _speak("Focus System Demo");
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => FocusSystemDemo(
-                                    nickname: widget.nickname,
-                                  ),
-                                ),
-                              );
-                            },
-                            isSmallScreen: isSmallScreen,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 30),
-                      
-                      // Learning Materials Cards - Main Focus
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          if (isVerySmallScreen) {
-                            // Single column for very small screens
-                            return Column(
-                              children: [
-                                CustomCardButton(
-                                  key: _readingKey,
-                                  imagePath: 'assets/lrn.png',
-                                  title: '',
-                                  width: double.infinity,
-                                  height: 200,
-                                  onTap: () async {
-                                    await _speak("Learning Materials");
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => Readingmaterialspage(nickname: widget.nickname)),
-                                    );
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                CustomCardButton(
-                                  key: _gamesKey,
-                                  imagePath: 'assets/games.png',
-                                  title: '',
-                                  width: double.infinity,
-                                  height: 200,
-                                  onTap: () async {
-                                    await _speak("Educational Games");
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => GamesLandingPage(nickname: widget.nickname)),
-                                    );
-                                  },
-                                ),
-                              ],
-                            );
-                          } else {
-                            // Wrap layout for larger screens
-                            return Wrap(
-                              spacing: isSmallScreen ? 16 : 20,
-                              runSpacing: isSmallScreen ? 16 : 20,
-                    alignment: WrapAlignment.center,
-                    children: [
-                      CustomCardButton(
-                        key: _readingKey,
-                        imagePath: 'assets/lrn.png',
-                        title: '',
-                                  width: isSmallScreen ? double.infinity : 300,
-                                  height: isSmallScreen ? 250 : 300,
-                        onTap: () async {
-                          await _speak("Learning Materials");
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => Readingmaterialspage(nickname: widget.nickname)),
-                          );
-                        },
-                      ),
-                      CustomCardButton(
-                        key: _gamesKey,
-                        imagePath: 'assets/games.png',
-                        title: '',
-                                  width: isSmallScreen ? double.infinity : 300,
-                                  height: isSmallScreen ? 250 : 300,
-                        onTap: () async {
-                                    await _speak("Educational Games");
-                          Navigator.push(
-                            context,
-                                      MaterialPageRoute(
-                                          builder: (context) => GamesLandingPage(nickname: widget.nickname)),
-                          );
-                        },
-                      ),
-                    ],
-                            );
-                          }
-                        },
-                  ),
-                    ],
-                ),
-              ),
+        ),
+        // Main content area
+        Expanded(
+          child: Padding(
+            padding: ResponsiveUtils.getResponsivePadding(context),
+            child: Center(
+              child: _buildMainCards(context),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
+  }
+
+  Widget _buildLargeDesktopLayout(BuildContext context) {
+    return Row(
+      children: [
+        // Sidebar for large desktop
+        Container(
+          width: 400,
+          color: const Color(0xFFFBEED9),
+          child: Column(
+            children: [
+              _buildHeader(context),
+              Expanded(
+                child: Padding(
+                  padding: ResponsiveUtils.getResponsivePadding(context),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        ReviewReminderWidget(
+                          nickname: widget.nickname,
+                          onReviewCompleted: () {
+                            setState(() {});
+                          },
+                        ),
+                        ResponsiveSpacing(mobileSpacing: 40),
+                        _buildIconButtons(context),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Main content area
+        Expanded(
+          child: Padding(
+            padding: ResponsiveUtils.getResponsivePadding(context),
+            child: Center(
+              child: _buildMainCards(context),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    final headerHeight = ResponsiveUtils.getResponsiveIconSize(
+      context,
+      mobile: 150,
+      tablet: 180,
+      desktop: 200,
+      largeDesktop: 220,
+    );
+
+    return Stack(
+      children: [
+        ClipPath(
+          clipper: TopWaveClipper(),
+          child: Container(
+            height: headerHeight,
+            width: double.infinity,
+            color: const Color(0xFFFBEED9),
+          ),
+        ),
+        Positioned(
+          top: ResponsiveUtils.getResponsiveSpacing(context, mobile: 40),
+          left: ResponsiveUtils.getResponsiveHorizontalPadding(context).left,
+          right: ResponsiveUtils.getResponsiveHorizontalPadding(context).right,
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ResponsiveText(
+                      'Hello, ${widget.nickname}! 👋',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF4A4E69),
+                        fontFamily: 'Poppins',
+                      ),
+                      mobileFontSize: 28,
+                      tabletFontSize: 36,
+                      desktopFontSize: 42,
+                      largeDesktopFontSize: 48,
+                    ),
+                    ResponsiveSpacing(mobileSpacing: 8),
+                    ResponsiveText(
+                      'Ready to learn and have fun? 🌟',
+                      style: TextStyle(
+                        color: const Color(0xFF648BA2),
+                        fontFamily: 'Poppins',
+                      ),
+                      mobileFontSize: 14,
+                      tabletFontSize: 16,
+                      desktopFontSize: 18,
+                      largeDesktopFontSize: 20,
+                    ),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () async {
+                  await _speak("My Profile");
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StudentProfile(
+                        nickname: widget.nickname,
+                      ),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: ResponsiveUtils.getResponsiveIconSize(context, mobile: 50),
+                  height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 50),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(
+                      ResponsiveUtils.getResponsiveIconSize(context, mobile: 25),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ResponsiveIcon(
+                    Icons.person,
+                    color: const Color(0xFF648BA2),
+                    mobileSize: 28,
+                    tabletSize: 32,
+                    desktopSize: 36,
+                    largeDesktopSize: 40,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildIconButtons(BuildContext context) {
+    return Wrap(
+      alignment: WrapAlignment.spaceEvenly,
+      spacing: ResponsiveUtils.getResponsiveSpacing(context, mobile: 8),
+      runSpacing: ResponsiveUtils.getResponsiveSpacing(context, mobile: 8),
+      children: [
+        _buildIconOnlyButton(
+          icon: Icons.analytics,
+          emoji: "📊",
+          color: const Color(0xFF648BA2),
+          title: "Analytics Hub",
+          onPressed: () async {
+            await _speak("Analytics Hub");
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => UnifiedAnalyticsDashboard(
+                  nickname: widget.nickname,
+                ),
+              ),
+            );
+          },
+          context: context,
+        ),
+        _buildIconOnlyButton(
+          icon: Icons.timer,
+          emoji: "⏰",
+          color: const Color(0xFF9C27B0),
+          title: "Focus System",
+          onPressed: () async {
+            await _speak("Focus System Demo");
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => FocusSystemDemo(
+                  nickname: widget.nickname,
+                ),
+              ),
+            );
+          },
+          context: context,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMainCards(BuildContext context) {
+    final screenType = ResponsiveUtils.getScreenType(context);
+    
+    if (screenType == ScreenType.mobile) {
+      return Column(
+        children: [
+          CustomCardButton(
+            key: _readingKey,
+            imagePath: 'assets/lrn.png',
+            title: '',
+            width: double.infinity,
+            height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 200),
+            onTap: () async {
+              await _speak("Learning Materials");
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Readingmaterialspage(nickname: widget.nickname),
+                ),
+              );
+            },
+          ),
+          ResponsiveSpacing(mobileSpacing: 16),
+          CustomCardButton(
+            key: _gamesKey,
+            imagePath: 'assets/games.png',
+            title: '',
+            width: double.infinity,
+            height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 200),
+            onTap: () async {
+              await _speak("Educational Games");
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => GamesLandingPage(nickname: widget.nickname),
+                ),
+              );
+            },
+          ),
+        ],
+      );
+    } else {
+      return Wrap(
+        spacing: ResponsiveUtils.getResponsiveSpacing(context, mobile: 20),
+        runSpacing: ResponsiveUtils.getResponsiveSpacing(context, mobile: 20),
+        alignment: WrapAlignment.center,
+        children: [
+          CustomCardButton(
+            key: _readingKey,
+            imagePath: 'assets/lrn.png',
+            title: '',
+            width: ResponsiveUtils.getResponsiveCardWidth(context),
+            height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 300),
+            onTap: () async {
+              await _speak("Learning Materials");
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Readingmaterialspage(nickname: widget.nickname),
+                ),
+              );
+            },
+          ),
+          CustomCardButton(
+            key: _gamesKey,
+            imagePath: 'assets/games.png',
+            title: '',
+            width: ResponsiveUtils.getResponsiveCardWidth(context),
+            height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 300),
+            onTap: () async {
+              await _speak("Educational Games");
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => GamesLandingPage(nickname: widget.nickname),
+                ),
+              );
+            },
+          ),
+        ],
+      );
+    }
   }
 
   Widget _buildIconOnlyButton({
@@ -430,13 +577,37 @@ class _StudentLandingPageState extends State<StudentLandingPage> {
     required String emoji,
     required Color color,
     required VoidCallback onPressed,
-    required bool isSmallScreen,
+    required BuildContext context,
     String? title,
   }) {
-    final buttonSize = isSmallScreen ? 80.0 : 90.0; // Increased from 60/70 to 80/90
-    final iconSize = isSmallScreen ? 32.0 : 36.0; // Increased from 24/28 to 32/36
-    final emojiSize = isSmallScreen ? 28.0 : 32.0; // Increased from 20/24 to 28/32
-    final titleSize = isSmallScreen ? 12.0 : 14.0;
+    final buttonSize = ResponsiveUtils.getResponsiveIconSize(
+      context,
+      mobile: 80,
+      tablet: 90,
+      desktop: 100,
+      largeDesktop: 110,
+    );
+    final iconSize = ResponsiveUtils.getResponsiveIconSize(
+      context,
+      mobile: 32,
+      tablet: 36,
+      desktop: 40,
+      largeDesktop: 44,
+    );
+    final emojiSize = ResponsiveUtils.getResponsiveIconSize(
+      context,
+      mobile: 28,
+      tablet: 32,
+      desktop: 36,
+      largeDesktop: 40,
+    );
+    final titleSize = ResponsiveUtils.getResponsiveFontSize(
+      context,
+      mobile: 12,
+      tablet: 14,
+      desktop: 16,
+      largeDesktop: 18,
+    );
     
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -449,39 +620,43 @@ class _StudentLandingPageState extends State<StudentLandingPage> {
             style: ElevatedButton.styleFrom(
               backgroundColor: color,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(buttonSize / 2), // Circular button
+                borderRadius: BorderRadius.circular(buttonSize / 2),
               ),
-              elevation: 10, // Increased elevation for more prominence
-              shadowColor: color.withValues(alpha: 0.4), // Slightly more prominent shadow
-              padding: EdgeInsets.zero, // Remove default padding
+              elevation: 10,
+              shadowColor: color.withValues(alpha: 0.4),
+              padding: EdgeInsets.zero,
             ),
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // Background emoji
                 Text(
                   emoji,
                   style: TextStyle(fontSize: emojiSize),
                 ),
-                // Foreground icon
-                Icon(
+                ResponsiveIcon(
                   icon,
                   color: Colors.white,
-                  size: iconSize,
+                  mobileSize: iconSize,
+                  tabletSize: iconSize * 1.1,
+                  desktopSize: iconSize * 1.2,
+                  largeDesktopSize: iconSize * 1.3,
                 ),
               ],
             ),
           ),
         ),
         if (title != null) ...[
-          const SizedBox(height: 8),
-          Text(
+          ResponsiveSpacing(mobileSpacing: 8),
+          ResponsiveText(
             title,
             style: TextStyle(
-              fontSize: titleSize,
               fontWeight: FontWeight.bold,
               color: const Color(0xFF2C3E50),
             ),
+            mobileFontSize: titleSize,
+            tabletFontSize: titleSize * 1.1,
+            desktopFontSize: titleSize * 1.2,
+            largeDesktopFontSize: titleSize * 1.3,
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -518,13 +693,19 @@ class CustomCardButton extends StatelessWidget {
         child: Card(
           color: const Color(0xFFFFF9E4),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(
+              ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 20),
+            ),
           ),
-          elevation: 8,
+          elevation: ResponsiveUtils.isSmallScreen(context) ? 6 : 8,
           child: Padding(
-            padding: const EdgeInsets.all(12.0),
+            padding: EdgeInsets.all(
+              ResponsiveUtils.getResponsiveSpacing(context, mobile: 12),
+            ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(
+                ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 12),
+              ),
               child: Image.asset(
                 imagePath,
                 width: double.infinity,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'memory_retention_system.dart';
-import 'progress_dashboard.dart';
+import 'unified_analytics_dashboard.dart';
 import 'review_reminder_widget.dart';
 
 /// Demo page to test and showcase the Memory Retention System
@@ -126,7 +126,7 @@ class _MemoryRetentionDemoState extends State<MemoryRetentionDemo> {
                   () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ProgressDashboard(
+                      builder: (context) => UnifiedAnalyticsDashboard(
                         nickname: _testNickname,
                       ),
                     ),
@@ -279,7 +279,7 @@ class _MemoryRetentionDemoState extends State<MemoryRetentionDemo> {
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ProgressDashboard(
+                builder: (context) => UnifiedAnalyticsDashboard(
                   nickname: _testNickname,
                 ),
               ),

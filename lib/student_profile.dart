@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'gamification_system.dart';
 import 'notification_service.dart';
 import 'mindfulness_exercises.dart';
+import 'responsive_utils.dart';
 
 /// Student Profile Page - Shows student information and stats
 class StudentProfile extends StatefulWidget {
@@ -108,30 +109,38 @@ class _StudentProfileState extends State<StudentProfile> with TickerProviderStat
               builder: (context, child) {
                 return Transform.scale(
                   scale: _pulseAnimation.value,
-                  child: const Text(
+                  child: ResponsiveText(
                     '🌟',
-                    style: TextStyle(fontSize: 28),
+                    mobileFontSize: 24,
+                    tabletFontSize: 26,
+                    desktopFontSize: 28,
+                    largeDesktopFontSize: 30,
                   ),
                 );
               },
             ),
-            const SizedBox(width: 8),
-            const Text(
+            ResponsiveSpacing(mobileSpacing: 8, isVertical: false),
+            ResponsiveText(
               'My Profile',
               style: TextStyle(
-                fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
+              mobileFontSize: 20,
+              tabletFontSize: 22,
+              desktopFontSize: 24,
+              largeDesktopFontSize: 26,
             ),
           ],
         ),
         backgroundColor: const Color(0xFF6C63FF),
         foregroundColor: Colors.white,
         elevation: 0,
-        shape: const RoundedRectangleBorder(
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(20),
+            bottom: Radius.circular(
+              ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 20),
+            ),
           ),
         ),
         bottom: TabBar(
@@ -140,7 +149,16 @@ class _StudentProfileState extends State<StudentProfile> with TickerProviderStat
           indicatorWeight: 4,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
-          labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          labelStyle: TextStyle(
+            fontSize: ResponsiveUtils.getResponsiveFontSize(
+              context,
+              mobile: 12,
+              tablet: 14,
+              desktop: 16,
+              largeDesktop: 18,
+            ),
+            fontWeight: FontWeight.bold,
+          ),
           isScrollable: true,
           tabs: const [
             Tab(text: '👤 My Info', icon: Icon(Icons.person_outline)),
@@ -186,7 +204,7 @@ class _StudentProfileState extends State<StudentProfile> with TickerProviderStat
         final userStatsData = snapshot.data!.data() as Map<String, dynamic>;
         
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: ResponsiveUtils.getResponsivePadding(context),
           child: Column(
             children: [
               // Profile Header with Animation
@@ -200,17 +218,17 @@ class _StudentProfileState extends State<StudentProfile> with TickerProviderStat
                 },
               ),
               
-              const SizedBox(height: 20),
+              ResponsiveSpacing(mobileSpacing: 20),
               
               // Fun Achievement Cards
               _buildAchievementCards(userStatsData),
               
-              const SizedBox(height: 20),
+              ResponsiveSpacing(mobileSpacing: 20),
               
               // Learning Progress
               _buildLearningProgress(userStatsData),
               
-              const SizedBox(height: 20),
+              ResponsiveSpacing(mobileSpacing: 20),
               
               // Fun Facts Section
               _buildFunFacts(userStatsData),

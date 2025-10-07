@@ -9,6 +9,7 @@ import 'attention_focus_system.dart';
 import 'gamification_system.dart';
 import 'gamified_ui_components.dart';
 import 'intelligent_nlp_system.dart';
+import 'responsive_utils.dart';
 
 class LearnShapeAssessment extends StatefulWidget {
   final String nickname;
@@ -23,8 +24,7 @@ class _LearnShapeAssessmentState extends State<LearnShapeAssessment> {
   late ConfettiController _confettiController;
   int currentQuestion = 0;
   int score = 0;
-  bool _useAdaptiveMode = true;
-  bool _showAnswerSummary = false;
+  final bool _useAdaptiveMode = true;
   
   // Focus and Gamification systems
   final AttentionFocusSystem _focusSystem = AttentionFocusSystem();
@@ -348,8 +348,8 @@ class _LearnShapeAssessmentState extends State<LearnShapeAssessment> {
                       gradient: LinearGradient(
                         colors: [
                           titleColor,
-                          titleColor.withOpacity(0.7),
-                          titleColor.withOpacity(0.5),
+                          titleColor.withValues(alpha: 0.7),
+                          titleColor.withValues(alpha: 0.5),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -357,7 +357,7 @@ class _LearnShapeAssessmentState extends State<LearnShapeAssessment> {
                       borderRadius: BorderRadius.circular(25),
                       boxShadow: [
                         BoxShadow(
-                          color: titleColor.withOpacity(0.4),
+                          color: titleColor.withValues(alpha: 0.4),
                           blurRadius: 12,
                           offset: const Offset(0, 6),
                         ),
@@ -439,35 +439,47 @@ class _LearnShapeAssessmentState extends State<LearnShapeAssessment> {
                     onPressed: () {
                       _showAnswerSummaryModal();
                     },
-                    icon: const Icon(
+                    icon: ResponsiveIcon(
                       Icons.quiz,
                       color: Colors.white,
-                      size: 24,
+                      mobileSize: 20,
+                      tabletSize: 22,
+                      desktopSize: 24,
+                      largeDesktopSize: 26,
                     ),
-                    label: const Text(
+                    label: ResponsiveText(
                       "View My Answers",
                       style: TextStyle(
-                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
+                      mobileFontSize: 16,
+                      tabletFontSize: 18,
+                      desktopFontSize: 20,
+                      largeDesktopFontSize: 22,
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF4A4E69),
-                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
+                      padding: ResponsiveUtils.getResponsivePadding(context),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
+                        borderRadius: BorderRadius.circular(
+                          ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 25),
+                        ),
                       ),
                       elevation: 5,
                     ),
                   ),
                   
-                  const SizedBox(height: 20),
+                  ResponsiveSpacing(mobileSpacing: 20),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF5DB2FF),
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      padding: ResponsiveUtils.getResponsivePadding(context),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 15),
+                        ),
+                      ),
                     ),
                     onPressed: () {
                       Navigator.of(context).pushAndRemoveUntil(
@@ -475,8 +487,15 @@ class _LearnShapeAssessmentState extends State<LearnShapeAssessment> {
                         (Route<dynamic> route) => false,
                       );
                     },
-                    child: const Text("Back to Learning", style: TextStyle(fontSize: 20, color: Colors.white)),
+                    child: ResponsiveText(
+                      "Back to Learning",
+                      style: TextStyle(color: Colors.white),
+                      mobileFontSize: 16,
+                      tabletFontSize: 18,
+                      desktopFontSize: 20,
+                      largeDesktopFontSize: 22,
                     ),
+                  ),
                   ],
                 ),
               ),
@@ -674,144 +693,299 @@ class _LearnShapeAssessmentState extends State<LearnShapeAssessment> {
     final questionData = questions[currentQuestion];
     final options = questionData['options'] as List<Map<String, String>>;
 
-    return WillPopScope(
-      onWillPop: () async {
-        _showSkipConfirmation();
-        return false;
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          _showSkipConfirmation();
+        }
       },
       child: Scaffold(
         backgroundColor: const Color(0xFFEFE9D5),
         body: SafeArea(
-          child: Stack(
-            children: [
-              // Simple close button in top right
-              Positioned(
-                top: 20,
-                right: 20,
-                child: GestureDetector(
-                  onTap: _showSkipConfirmation,
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade100,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.red.shade300, width: 2),
-                    ),
-                    child: Icon(
-                      Icons.close,
-                      color: Colors.red.shade600,
-                      size: 24,
-                    ),
-                  ),
-                ),
-              ),
-              // Main Content
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 80),
-                    // Kid-friendly question counter
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.blue.shade100, Colors.blue.shade50],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(25),
-                          border: Border.all(color: Colors.blue.shade300, width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.blue.shade200,
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.quiz,
-                              color: Colors.blue.shade600,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Question ${currentQuestion + 1} of ${questions.length}',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue.shade700,
-                                fontFamily: 'Poppins',
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(questionData['question'] as String, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w600)),
-                          IconButton(icon: const Icon(Icons.volume_up), iconSize: 30, onPressed: _repeatQuestion),
-                          const SizedBox(height: 20),
-                          DragTarget<String>(
-  onAcceptWithDetails: (details) => _handleDrop(details.data),
-                            builder: (context, candidateData, rejectedData) {
-                              return SizedBox(
-                                width: 250,
-                                height: 250,
-                                child: isCorrectShapeDropped
-                                    ? Image.asset(
-                                        options.firstWhere((opt) => opt['shape'] == questionData['answer'])['image']!,
-                                        fit: BoxFit.contain,
-                                      )
-                                    : CustomPaint(size: const Size(250, 250), painter: DashedShapePainter(questionData['matchWith'] as String)),
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          Text("Attempts: $attempts/3", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                        ],
-                      ),
-                    ),
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: 16,
-                      runSpacing: 16,
-                      children: options.map((option) {
-                        return Draggable<String>(
-                          data: option['shape'],
-                          feedback: Material(
-                            child: Container(
-                              width: 120,
-                              height: 120,
-                              decoration: BoxDecoration(border: Border.all(color: Colors.black26), borderRadius: BorderRadius.circular(12)),
-                              child: Image.asset(option['image']!, fit: BoxFit.contain),
-                            ),
-                          ),
-                          child: Container(
-                            width: 120,
-                            height: 120,
-                            decoration: BoxDecoration(border: Border.all(color: Colors.black26), borderRadius: BorderRadius.circular(12)),
-                            child: Image.asset(option['image']!, fit: BoxFit.contain),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          child: ResponsiveWidget(
+            mobile: _buildMobileLayout(context, questionData, options),
+            tablet: _buildTabletLayout(context, questionData, options),
+            desktop: _buildDesktopLayout(context, questionData, options),
+            largeDesktop: _buildLargeDesktopLayout(context, questionData, options),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildMobileLayout(BuildContext context, Map<String, dynamic> questionData, List<Map<String, String>> options) {
+    return Stack(
+      children: [
+        _buildCloseButton(context),
+        SingleChildScrollView(
+          padding: ResponsiveUtils.getResponsivePadding(context),
+          child: Column(
+            children: [
+              ResponsiveSpacing(mobileSpacing: 60),
+              _buildQuestionCounter(context),
+              ResponsiveSpacing(mobileSpacing: 20),
+              _buildQuestionContent(context, questionData, options),
+              ResponsiveSpacing(mobileSpacing: 20),
+              _buildDraggableOptions(context, options),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTabletLayout(BuildContext context, Map<String, dynamic> questionData, List<Map<String, String>> options) {
+    return Stack(
+      children: [
+        _buildCloseButton(context),
+        SingleChildScrollView(
+          padding: ResponsiveUtils.getResponsivePadding(context),
+          child: Column(
+            children: [
+              ResponsiveSpacing(mobileSpacing: 60),
+              _buildQuestionCounter(context),
+              ResponsiveSpacing(mobileSpacing: 20),
+              _buildQuestionContent(context, questionData, options),
+              ResponsiveSpacing(mobileSpacing: 20),
+              _buildDraggableOptions(context, options),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDesktopLayout(BuildContext context, Map<String, dynamic> questionData, List<Map<String, String>> options) {
+    return Stack(
+      children: [
+        _buildCloseButton(context),
+        SingleChildScrollView(
+          padding: ResponsiveUtils.getResponsivePadding(context),
+          child: Column(
+            children: [
+              ResponsiveSpacing(mobileSpacing: 60),
+              _buildQuestionCounter(context),
+              ResponsiveSpacing(mobileSpacing: 20),
+              _buildQuestionContent(context, questionData, options),
+              ResponsiveSpacing(mobileSpacing: 20),
+              _buildDraggableOptions(context, options),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLargeDesktopLayout(BuildContext context, Map<String, dynamic> questionData, List<Map<String, String>> options) {
+    return Stack(
+      children: [
+        _buildCloseButton(context),
+        SingleChildScrollView(
+          padding: ResponsiveUtils.getResponsivePadding(context),
+          child: Column(
+            children: [
+              ResponsiveSpacing(mobileSpacing: 60),
+              _buildQuestionCounter(context),
+              ResponsiveSpacing(mobileSpacing: 20),
+              _buildQuestionContent(context, questionData, options),
+              ResponsiveSpacing(mobileSpacing: 20),
+              _buildDraggableOptions(context, options),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCloseButton(BuildContext context) {
+    return Positioned(
+      top: 20,
+      right: 20,
+      child: GestureDetector(
+        onTap: _showSkipConfirmation,
+        child: Container(
+          padding: ResponsiveUtils.getResponsivePadding(context),
+          decoration: BoxDecoration(
+            color: Colors.red.shade100,
+            borderRadius: BorderRadius.circular(
+              ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 20),
+            ),
+            border: Border.all(
+              color: Colors.red.shade300,
+              width: ResponsiveUtils.isSmallScreen(context) ? 1 : 2,
+            ),
+          ),
+          child: ResponsiveIcon(
+            Icons.close,
+            color: Colors.red.shade600,
+            mobileSize: 20,
+            tabletSize: 22,
+            desktopSize: 24,
+            largeDesktopSize: 26,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuestionCounter(BuildContext context) {
+    return Center(
+      child: Container(
+        padding: ResponsiveUtils.getResponsivePadding(context),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue.shade100, Colors.blue.shade50],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(
+            ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 25),
+          ),
+          border: Border.all(
+            color: Colors.blue.shade300,
+            width: ResponsiveUtils.isSmallScreen(context) ? 1 : 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blue.shade200,
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ResponsiveIcon(
+              Icons.quiz,
+              color: Colors.blue.shade600,
+              mobileSize: 18,
+              tabletSize: 20,
+              desktopSize: 22,
+              largeDesktopSize: 24,
+            ),
+            ResponsiveSpacing(mobileSpacing: 8, isVertical: false),
+            ResponsiveText(
+              'Question ${currentQuestion + 1} of ${questions.length}',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.blue.shade700,
+                fontFamily: 'Poppins',
+              ),
+              mobileFontSize: 16,
+              tabletFontSize: 18,
+              desktopFontSize: 20,
+              largeDesktopFontSize: 22,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuestionContent(BuildContext context, Map<String, dynamic> questionData, List<Map<String, String>> options) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        ResponsiveText(
+          questionData['question'] as String,
+          style: TextStyle(fontWeight: FontWeight.w600),
+          mobileFontSize: 18,
+          tabletFontSize: 20,
+          desktopFontSize: 22,
+          largeDesktopFontSize: 24,
+        ),
+        ResponsiveSpacing(mobileSpacing: 10),
+        IconButton(
+          icon: ResponsiveIcon(
+            Icons.volume_up,
+            color: Colors.black,
+            mobileSize: 24,
+            tabletSize: 26,
+            desktopSize: 28,
+            largeDesktopSize: 30,
+          ),
+          onPressed: _repeatQuestion,
+        ),
+        ResponsiveSpacing(mobileSpacing: 20),
+        _buildDragTarget(context, questionData, options),
+        ResponsiveSpacing(mobileSpacing: 12),
+        ResponsiveText(
+          "Attempts: $attempts/3",
+          style: TextStyle(fontWeight: FontWeight.w600),
+          mobileFontSize: 16,
+          tabletFontSize: 18,
+          desktopFontSize: 20,
+          largeDesktopFontSize: 22,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDragTarget(BuildContext context, Map<String, dynamic> questionData, List<Map<String, String>> options) {
+    final targetSize = ResponsiveUtils.isSmallScreen(context) 
+      ? ResponsiveUtils.getResponsiveIconSize(context, mobile: 200)
+      : ResponsiveUtils.getResponsiveIconSize(context, mobile: 250);
+
+    return DragTarget<String>(
+      onAcceptWithDetails: (details) => _handleDrop(details.data),
+      builder: (context, candidateData, rejectedData) {
+        return SizedBox(
+          width: targetSize,
+          height: targetSize,
+          child: isCorrectShapeDropped
+              ? Image.asset(
+                  options.firstWhere((opt) => opt['shape'] == questionData['answer'])['image']!,
+                  fit: BoxFit.contain,
+                )
+              : CustomPaint(
+                  size: Size(targetSize, targetSize), 
+                  painter: DashedShapePainter(questionData['matchWith'] as String)
+                ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDraggableOptions(BuildContext context, List<Map<String, String>> options) {
+    final optionSize = ResponsiveUtils.isSmallScreen(context) 
+      ? ResponsiveUtils.getResponsiveIconSize(context, mobile: 80)
+      : ResponsiveUtils.getResponsiveIconSize(context, mobile: 120);
+
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: ResponsiveUtils.isSmallScreen(context) ? 12 : 16,
+      runSpacing: ResponsiveUtils.isSmallScreen(context) ? 12 : 16,
+      children: options.map((option) {
+        return Draggable<String>(
+          data: option['shape'],
+          feedback: Material(
+            child: Container(
+              width: optionSize,
+              height: optionSize,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black26), 
+                borderRadius: BorderRadius.circular(
+                  ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 12),
+                ),
+              ),
+              child: Image.asset(option['image']!, fit: BoxFit.contain),
+            ),
+          ),
+          child: Container(
+            width: optionSize,
+            height: optionSize,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.black26), 
+              borderRadius: BorderRadius.circular(
+                ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 12),
+              ),
+            ),
+            child: Image.asset(option['image']!, fit: BoxFit.contain),
+          ),
+        );
+      }).toList(),
     );
   }
 

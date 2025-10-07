@@ -6,6 +6,7 @@ import 'WhereDoesItBelong.dart'; // ✅ Newly added
 import 'LetterTracing.dart'; // ✅ Newly added tracing game
 import 'flashcard_system.dart'; // ✅ Flashcard Game
 import 'ColorMatchingGame.dart'; // ✅ Color Matching Game
+import 'responsive_utils.dart';
 
 class GamesLandingPage extends StatelessWidget {
   final String nickname;
@@ -16,211 +17,275 @@ class GamesLandingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFEFE9D5),
-      body: OrientationBuilder(
-        builder: (context, orientation) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 20.0,
-              vertical: 30.0,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: SizedBox(
-                    height: 60,
-                    width: 180,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF648BA2),
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 15,
-                          horizontal: 20,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Go Back',
-                        style: TextStyle(
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Games",
-                      style: TextStyle(
-                        fontSize: 45,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF4A4E69),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      double maxWidth = constraints.maxWidth;
-                      int crossAxisCount =
-                          orientation == Orientation.portrait ? 1 : 3;
-                      double maxExtent = maxWidth / crossAxisCount + 80;
-                      double gridWidth = maxWidth > 1200 ? 1200 : maxWidth;
-
-                      return Center(
-                        child: SizedBox(
-                          width: gridWidth,
-                          child: GridView(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 10,
-                              horizontal: 10,
-                            ),
-                            shrinkWrap: true,
-                                gridDelegate:
-                                SliverGridDelegateWithMaxCrossAxisExtent(
-                                  maxCrossAxisExtent: maxExtent,
-                                  crossAxisSpacing: 40,
-                                  mainAxisSpacing: 30,
-                                  childAspectRatio: 0.72,
-                                ),
-                            children: [
-                              _buildGameCard(
-                                imagePath: 'assets/sayitright.png',
-                                title: 'Say It Right',
-                                imageWidth: 270,
-                                imageHeight: 370,
-                                imageRadius: 15,
-                                cardColor: const Color(0xFFFCF5D9),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => SayItRight(nickname: nickname),
-                                    ),
-                                  );
-                                },
-                              ),
-                              _buildGameCard(
-                                imagePath: 'assets/mth.png',
-                                title: 'Match The Sound',
-                                imageWidth: 270,
-                                imageHeight: 370,
-                                imageRadius: 15,
-                                cardColor: const Color(0xFFFBEAB4),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => MatchSoundPage(nickname: nickname),
-                                    ),
-                                  );
-                                },
-                              ),
-                              _buildGameCard(
-                                imagePath: 'assets/d&d.png',
-                                title: 'Form The Word',
-                                imageWidth: 270,
-                                imageHeight: 370,
-                                imageRadius: 15,
-                                cardColor: const Color(0xFFFEF1D6),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => AppleWordGame(nickname: nickname),
-                                    ),
-                                  );
-                                },
-                              ),
-                              _buildGameCard(
-                                imagePath: 'assets/board.png', // ✅ Use existing board image
-                                title: 'Where Does It Belong',
-                                imageWidth: 270,
-                                imageHeight: 370,
-                                imageRadius: 15,
-                                cardColor: const Color(0xFFFDEFC8),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => WhereDoesItBelongGame(nickname: nickname),
-                                    ),
-                                  );
-                                },
-                              ),
-                              _buildGameCard(
-                                imagePath: 'assets/pen.jpg', // ✅ Use existing pen image
-                                title: 'Letter Tracing',
-                                imageWidth: 270,
-                                imageHeight: 370,
-                                imageRadius: 15,
-                                cardColor: const Color(0xFFFCECC8),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => LetterTracingGame(nickname: nickname),
-                                    ),
-                                  );
-                                },
-                              ),
-                              _buildGameCard(
-                                imagePath: 'assets/app.png', // ✅ Use existing app image
-                                title: 'Flashcard Game',
-                                imageWidth: 270,
-                                imageHeight: 370,
-                                imageRadius: 15,
-                                cardColor: const Color(0xFFE8F5E8),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => FlashcardGame(nickname: nickname),
-                                    ),
-                                  );
-                                },
-                              ),
-                              _buildGameCard(
-                                imagePath: 'assets/colors.png', // ✅ Use existing colors image
-                                title: 'Color Matching',
-                                imageWidth: 270,
-                                imageHeight: 370,
-                                imageRadius: 15,
-                                cardColor: const Color(0xFFF0E6FF),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ColorMatchingGame(nickname: nickname),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
+      body: ResponsiveWidget(
+        mobile: _buildMobileLayout(context),
+        tablet: _buildTabletLayout(context),
+        desktop: _buildDesktopLayout(context),
+        largeDesktop: _buildLargeDesktopLayout(context),
       ),
+    );
+  }
+
+  Widget _buildMobileLayout(BuildContext context) {
+    return Padding(
+      padding: ResponsiveUtils.getResponsivePadding(context),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildBackButton(context),
+          ResponsiveSpacing(mobileSpacing: 10),
+          _buildTitle(context),
+          ResponsiveSpacing(mobileSpacing: 20),
+          Expanded(
+            child: _buildGamesGrid(context, crossAxisCount: 1),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabletLayout(BuildContext context) {
+    return Padding(
+      padding: ResponsiveUtils.getResponsivePadding(context),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildBackButton(context),
+          ResponsiveSpacing(mobileSpacing: 10),
+          _buildTitle(context),
+          ResponsiveSpacing(mobileSpacing: 20),
+          Expanded(
+            child: _buildGamesGrid(context, crossAxisCount: 2),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDesktopLayout(BuildContext context) {
+    return Padding(
+      padding: ResponsiveUtils.getResponsivePadding(context),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildBackButton(context),
+          ResponsiveSpacing(mobileSpacing: 10),
+          _buildTitle(context),
+          ResponsiveSpacing(mobileSpacing: 20),
+          Expanded(
+            child: _buildGamesGrid(context, crossAxisCount: 3),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLargeDesktopLayout(BuildContext context) {
+    return Padding(
+      padding: ResponsiveUtils.getResponsivePadding(context),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildBackButton(context),
+          ResponsiveSpacing(mobileSpacing: 10),
+          _buildTitle(context),
+          ResponsiveSpacing(mobileSpacing: 20),
+          Expanded(
+            child: _buildGamesGrid(context, crossAxisCount: 4),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBackButton(BuildContext context) {
+    return Align(
+      alignment: Alignment.topLeft,
+      child: SizedBox(
+        height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 50),
+        width: ResponsiveUtils.getResponsiveIconSize(context, mobile: 150),
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF648BA2),
+            padding: EdgeInsets.symmetric(
+              vertical: ResponsiveUtils.getResponsiveSpacing(context, mobile: 15),
+              horizontal: ResponsiveUtils.getResponsiveSpacing(context, mobile: 20),
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 12),
+              ),
+            ),
+          ),
+          child: ResponsiveText(
+            'Go Back',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+            mobileFontSize: 20,
+            tabletFontSize: 22,
+            desktopFontSize: 24,
+            largeDesktopFontSize: 26,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTitle(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        ResponsiveText(
+          "Games",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF4A4E69),
+          ),
+          mobileFontSize: 35,
+          tabletFontSize: 40,
+          desktopFontSize: 45,
+          largeDesktopFontSize: 50,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGamesGrid(BuildContext context, {required int crossAxisCount}) {
+    return GridView(
+      padding: ResponsiveUtils.getResponsivePadding(context),
+      shrinkWrap: true,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: ResponsiveUtils.getResponsiveSpacing(context, mobile: 20),
+        mainAxisSpacing: ResponsiveUtils.getResponsiveSpacing(context, mobile: 20),
+        childAspectRatio: ResponsiveUtils.isSmallScreen(context) ? 0.8 : 0.72,
+      ),
+      children: [
+        _buildGameCard(
+          imagePath: 'assets/sayitright.png',
+          title: 'Say It Right',
+          imageWidth: ResponsiveUtils.getResponsiveIconSize(context, mobile: 200),
+          imageHeight: ResponsiveUtils.getResponsiveIconSize(context, mobile: 280),
+          imageRadius: ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 15),
+          cardColor: const Color(0xFFFCF5D9),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SayItRight(nickname: nickname),
+              ),
+            );
+          },
+          context: context,
+        ),
+        _buildGameCard(
+          imagePath: 'assets/mth.png',
+          title: 'Match The Sound',
+          imageWidth: ResponsiveUtils.getResponsiveIconSize(context, mobile: 200),
+          imageHeight: ResponsiveUtils.getResponsiveIconSize(context, mobile: 280),
+          imageRadius: ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 15),
+          cardColor: const Color(0xFFFBEAB4),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MatchSoundPage(nickname: nickname),
+              ),
+            );
+          },
+          context: context,
+        ),
+        _buildGameCard(
+          imagePath: 'assets/d&d.png',
+          title: 'Form The Word',
+          imageWidth: ResponsiveUtils.getResponsiveIconSize(context, mobile: 200),
+          imageHeight: ResponsiveUtils.getResponsiveIconSize(context, mobile: 280),
+          imageRadius: ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 15),
+          cardColor: const Color(0xFFFEF1D6),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AppleWordGame(nickname: nickname),
+              ),
+            );
+          },
+          context: context,
+        ),
+        _buildGameCard(
+          imagePath: 'assets/board.png',
+          title: 'Where Does It Belong',
+          imageWidth: ResponsiveUtils.getResponsiveIconSize(context, mobile: 200),
+          imageHeight: ResponsiveUtils.getResponsiveIconSize(context, mobile: 280),
+          imageRadius: ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 15),
+          cardColor: const Color(0xFFFDEFC8),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => WhereDoesItBelongGame(nickname: nickname),
+              ),
+            );
+          },
+          context: context,
+        ),
+        _buildGameCard(
+          imagePath: 'assets/pen.jpg',
+          title: 'Letter Tracing',
+          imageWidth: ResponsiveUtils.getResponsiveIconSize(context, mobile: 200),
+          imageHeight: ResponsiveUtils.getResponsiveIconSize(context, mobile: 280),
+          imageRadius: ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 15),
+          cardColor: const Color(0xFFFCECC8),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => LetterTracingGame(nickname: nickname),
+              ),
+            );
+          },
+          context: context,
+        ),
+        _buildGameCard(
+          imagePath: 'assets/app.png',
+          title: 'Flashcard Game',
+          imageWidth: ResponsiveUtils.getResponsiveIconSize(context, mobile: 200),
+          imageHeight: ResponsiveUtils.getResponsiveIconSize(context, mobile: 280),
+          imageRadius: ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 15),
+          cardColor: const Color(0xFFE8F5E8),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => FlashcardGame(nickname: nickname),
+              ),
+            );
+          },
+          context: context,
+        ),
+        _buildGameCard(
+          imagePath: 'assets/colors.png',
+          title: 'Color Matching',
+          imageWidth: ResponsiveUtils.getResponsiveIconSize(context, mobile: 200),
+          imageHeight: ResponsiveUtils.getResponsiveIconSize(context, mobile: 280),
+          imageRadius: ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 15),
+          cardColor: const Color(0xFFF0E6FF),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ColorMatchingGame(nickname: nickname),
+              ),
+            );
+          },
+          context: context,
+        ),
+      ],
     );
   }
 
@@ -232,15 +297,18 @@ class GamesLandingPage extends StatelessWidget {
     double imageRadius = 10,
     VoidCallback? onTap,
     Color cardColor = const Color(0xFFFCF5D9),
+    required BuildContext context,
   }) {
     return InkWell(
       onTap: onTap,
       child: Container(
-        width: 300,
-        height: 420,
+        width: ResponsiveUtils.getResponsiveIconSize(context, mobile: 280),
+        height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 380),
         decoration: BoxDecoration(
           color: cardColor,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(
+            ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 20),
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
@@ -250,7 +318,9 @@ class GamesLandingPage extends StatelessWidget {
             ),
           ],
         ),
-        padding: const EdgeInsets.all(15),
+        padding: EdgeInsets.all(
+          ResponsiveUtils.getResponsiveSpacing(context, mobile: 15),
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -261,15 +331,18 @@ class GamesLandingPage extends StatelessWidget {
                 height: imageHeight,
                 radius: imageRadius,
               ),
-            const SizedBox(height: 10),
+            ResponsiveSpacing(mobileSpacing: 10),
             Flexible(
-              child: Text(
+              child: ResponsiveText(
                 title,
-                style: const TextStyle(
-                  fontSize: 18,
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF4A4E69),
                 ),
+                mobileFontSize: 16,
+                tabletFontSize: 18,
+                desktopFontSize: 20,
+                largeDesktopFontSize: 22,
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

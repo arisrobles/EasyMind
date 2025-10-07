@@ -3,6 +3,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
 import 'ShapeAssessment.dart'; // Import the assessment page
+import 'responsive_utils.dart';
 
 // A new widget to handle the shape drawing and animation.
 class ShapeAnimator extends StatefulWidget {
@@ -76,8 +77,8 @@ class _ShapeAnimatorState extends State<ShapeAnimator>
         // The custom painter that draws the shape and highlights.
         CustomPaint(
           size: Size(
-            MediaQuery.of(context).size.width < 400 ? 150 : 200,
-            MediaQuery.of(context).size.width < 400 ? 150 : 200,
+            ResponsiveUtils.getResponsiveIconSize(context, mobile: 150),
+            ResponsiveUtils.getResponsiveIconSize(context, mobile: 150),
           ),
           painter: ShapePainter(
             sideCount: widget.sideCount,
@@ -86,34 +87,46 @@ class _ShapeAnimatorState extends State<ShapeAnimator>
             color: widget.color,
           ),
         ),
-        const SizedBox(height: 24),
+        ResponsiveSpacing(mobileSpacing: 24),
         // A counter text that updates with the animation.
-        Text(
+        ResponsiveText(
           // For a circle (0 sides in our logic), don't show a counter.
           widget.sideCount > 0
               ? 'Side: ${_highlightedSideIndex > widget.sideCount ? widget.sideCount : _highlightedSideIndex}'
               : 'I have 1 continuous edge!',
           style: TextStyle(
             fontFamily: 'Poppins',
-            fontSize: MediaQuery.of(context).size.width < 400 ? 24 : 32,
             fontWeight: FontWeight.bold,
             color: const Color(0xFF4A4E69),
           ),
+          mobileFontSize: 24,
+          tabletFontSize: 28,
+          desktopFontSize: 32,
+          largeDesktopFontSize: 36,
           textAlign: TextAlign.center,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
-        const SizedBox(height: 16),
+        ResponsiveSpacing(mobileSpacing: 16),
         // Replay button
         ElevatedButton(
           onPressed: replayAnimation,
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF648BA2),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(
+                ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 12),
+              ),
             ),
           ),
-          child: const Icon(Icons.replay, size: 30, color: Colors.white),
+          child: ResponsiveIcon(
+            Icons.replay,
+            color: Colors.white,
+            mobileSize: 30,
+            tabletSize: 32,
+            desktopSize: 34,
+            largeDesktopSize: 36,
+          ),
         ),
       ],
     );
@@ -451,60 +464,61 @@ class _ShapesActivityPageState extends State<ShapesActivityPage> {
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 20),
+            ResponsiveSpacing(mobileSpacing: 20),
             Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: MediaQuery.of(context).size.width < 400 ? 12.0 : 16.0,
-              ),
+              padding: ResponsiveUtils.getResponsivePadding(context),
               child: Align(
                 alignment: Alignment.topLeft,
                 child: SizedBox(
-                  width: MediaQuery.of(context).size.width < 400 ? 140 : 180,
-                  height: MediaQuery.of(context).size.width < 400 ? 50 : 60,
+                  width: ResponsiveUtils.getResponsiveIconSize(context, mobile: 140),
+                  height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 50),
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF648BA2),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: MediaQuery.of(context).size.width < 400 ? 12 : 16,
-                        vertical: MediaQuery.of(context).size.width < 400 ? 10 : 12,
-                      ),
+                      padding: ResponsiveUtils.getResponsivePadding(context),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(
+                          ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 12),
+                        ),
                       ),
                     ),
-                    child: Text(
+                    child: ResponsiveText(
                       'Go Back',
                       style: TextStyle(
                         fontFamily: 'Poppins',
-                        fontSize: MediaQuery.of(context).size.width < 400 ? 18 : 25,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
+                      mobileFontSize: 18,
+                      tabletFontSize: 20,
+                      desktopFontSize: 22,
+                      largeDesktopFontSize: 24,
                     ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            ResponsiveSpacing(mobileSpacing: 20),
             Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: MediaQuery.of(context).size.width < 400 ? 12.0 : 16.0,
-              ),
-              child: Text(
+              padding: ResponsiveUtils.getResponsivePadding(context),
+              child: ResponsiveText(
                 'Instruction: Watch the sides get counted one by one.',
                 style: TextStyle(
                   fontFamily: 'Poppins',
-                  fontSize: MediaQuery.of(context).size.width < 400 ? 20 : 28,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF4A4E69),
                 ),
+                mobileFontSize: 20,
+                tabletFontSize: 22,
+                desktopFontSize: 24,
+                largeDesktopFontSize: 26,
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(height: 16),
+            ResponsiveSpacing(mobileSpacing: 16),
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
@@ -517,68 +531,94 @@ class _ShapesActivityPageState extends State<ShapesActivityPage> {
                   _saveProgress();
                 },
                 itemBuilder: (context, index) {
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildShapePage(
-                        shapes[index]['sides']!,
-                        shapes[index]['corners']!,
-                        shapes[index]['name']!,
-                        shapes[index]['sideCount']!,
-                        index,
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: MediaQuery.of(context).size.height - 200,
                       ),
-                      const SizedBox(height: 20),
-                      Row(
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          ElevatedButton(
-                            onPressed: _currentPage > 0 ? _previousPage : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF648BA2),
-                              padding: EdgeInsets.symmetric(
-                                vertical: MediaQuery.of(context).size.width < 400 ? 12 : 15,
-                                horizontal: MediaQuery.of(context).size.width < 400 ? 20 : 30,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: Text(
-                              'Previous',
-                              style: TextStyle(
-                                fontFamily: 'Poppins',
-                                fontSize: MediaQuery.of(context).size.width < 400 ? 16 : 20,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
+                          _buildShapePage(
+                            shapes[index]['sides']!,
+                            shapes[index]['corners']!,
+                            shapes[index]['name']!,
+                            shapes[index]['sideCount']!,
+                            index,
                           ),
-                          SizedBox(width: MediaQuery.of(context).size.width < 400 ? 15 : 20),
-                          ElevatedButton(
-                            onPressed: _nextPage,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF648BA2),
-                              padding: EdgeInsets.symmetric(
-                                vertical: MediaQuery.of(context).size.width < 400 ? 12 : 15,
-                                horizontal: MediaQuery.of(context).size.width < 400 ? 20 : 30,
+                          ResponsiveSpacing(
+                            mobileSpacing: ResponsiveUtils.isSmallScreen(context) ? 10 : 20,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ElevatedButton(
+                                onPressed: _currentPage > 0 ? _previousPage : null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF648BA2),
+                                  padding: ResponsiveUtils.isSmallScreen(context)
+                                    ? EdgeInsets.symmetric(
+                                        horizontal: ResponsiveUtils.getResponsiveSpacing(context, mobile: 16),
+                                        vertical: ResponsiveUtils.getResponsiveSpacing(context, mobile: 8),
+                                      )
+                                    : ResponsiveUtils.getResponsivePadding(context),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 12),
+                                    ),
+                                  ),
+                                ),
+                                child: ResponsiveText(
+                                  'Previous',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                  mobileFontSize: 16,
+                                  tabletFontSize: 18,
+                                  desktopFontSize: 20,
+                                  largeDesktopFontSize: 22,
+                                ),
                               ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                              ResponsiveSpacing(
+                                mobileSpacing: ResponsiveUtils.isSmallScreen(context) ? 10 : 15,
+                                isVertical: false,
                               ),
-                            ),
-                            child: Text(
-                              'Next',
-                              style: TextStyle(
-                                fontFamily: 'Poppins',
-                                fontSize: MediaQuery.of(context).size.width < 400 ? 16 : 20,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                              ElevatedButton(
+                                onPressed: _nextPage,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF648BA2),
+                                  padding: ResponsiveUtils.isSmallScreen(context)
+                                    ? EdgeInsets.symmetric(
+                                        horizontal: ResponsiveUtils.getResponsiveSpacing(context, mobile: 16),
+                                        vertical: ResponsiveUtils.getResponsiveSpacing(context, mobile: 8),
+                                      )
+                                    : ResponsiveUtils.getResponsivePadding(context),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 12),
+                                    ),
+                                  ),
+                                ),
+                                child: ResponsiveText(
+                                  'Next',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                  mobileFontSize: 16,
+                                  tabletFontSize: 18,
+                                  desktopFontSize: 20,
+                                  largeDesktopFontSize: 22,
+                                ),
                               ),
-                            ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
+                    ),
                   );
                 },
               ),
@@ -603,16 +643,19 @@ class _ShapesActivityPageState extends State<ShapesActivityPage> {
       child: Card(
         color: Colors.white,
         elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          width: MediaQuery.of(context).size.width < 400 ? screenWidth * 0.85 : screenWidth * 0.7,
-          height: MediaQuery.of(context).size.width < 400 ? screenHeight * 0.65 : screenHeight * 0.58,
-          padding: EdgeInsets.fromLTRB(
-            MediaQuery.of(context).size.width < 400 ? 12 : 20,
-            MediaQuery.of(context).size.width < 400 ? 8 : 10,
-            MediaQuery.of(context).size.width < 400 ? 12 : 20,
-            MediaQuery.of(context).size.width < 400 ? 8 : 10,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(
+            ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 20),
           ),
+        ),
+        child: Container(
+          width: ResponsiveUtils.isSmallScreen(context) 
+            ? screenWidth * 0.85 
+            : screenWidth * 0.7,
+          height: ResponsiveUtils.isSmallScreen(context) 
+            ? screenHeight * 0.6 
+            : screenHeight * 0.58,
+          padding: ResponsiveUtils.getResponsivePadding(context),
           child: Column(
             children: [
               Align(
@@ -620,21 +663,26 @@ class _ShapesActivityPageState extends State<ShapesActivityPage> {
                 child: GestureDetector(
                   onTap: () => _playShapeSound(index),
                   child: Container(
-                    width: MediaQuery.of(context).size.width < 400 ? 40 : 50,
-                    height: MediaQuery.of(context).size.width < 400 ? 40 : 50,
+                    width: ResponsiveUtils.getResponsiveIconSize(context, mobile: 40),
+                    height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 40),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.blue.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(
+                        ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 8),
+                      ),
                     ),
-                    child: Icon(
+                    child: ResponsiveIcon(
                       Icons.volume_up,
-                      size: MediaQuery.of(context).size.width < 400 ? 24 : 30,
                       color: Colors.black,
+                      mobileSize: 24,
+                      tabletSize: 26,
+                      desktopSize: 28,
+                      largeDesktopSize: 30,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 5),
+              ResponsiveSpacing(mobileSpacing: ResponsiveUtils.isSmallScreen(context) ? 3 : 5),
               // The new ShapeAnimator widget replaces the old Image.asset
               ShapeAnimator(
                 // Use a ValueKey to ensure the widget rebuilds on page change
@@ -642,41 +690,50 @@ class _ShapesActivityPageState extends State<ShapesActivityPage> {
                 shapeId: index,
                 sideCount: sideCount,
               ),
-              const SizedBox(height: 16),
-              Text(
+              ResponsiveSpacing(mobileSpacing: ResponsiveUtils.isSmallScreen(context) ? 12 : 16),
+              ResponsiveText(
                 sidesText,
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontWeight: FontWeight.bold,
-                  fontSize: MediaQuery.of(context).size.width < 400 ? 24 : 33,
                   color: Colors.black,
                 ),
+                mobileFontSize: 24,
+                tabletFontSize: 26,
+                desktopFontSize: 28,
+                largeDesktopFontSize: 30,
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              SizedBox(height: MediaQuery.of(context).size.width < 400 ? 6 : 8),
-              Text(
+              ResponsiveSpacing(mobileSpacing: ResponsiveUtils.isSmallScreen(context) ? 4 : 6),
+              ResponsiveText(
                 cornersText,
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontWeight: FontWeight.bold,
-                  fontSize: MediaQuery.of(context).size.width < 400 ? 20 : 28,
                   color: Colors.black,
                 ),
+                mobileFontSize: 20,
+                tabletFontSize: 22,
+                desktopFontSize: 24,
+                largeDesktopFontSize: 26,
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              SizedBox(height: MediaQuery.of(context).size.width < 400 ? 4 : 6),
-              Text(
+              ResponsiveSpacing(mobileSpacing: ResponsiveUtils.isSmallScreen(context) ? 2 : 4),
+              ResponsiveText(
                 shapeText,
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontWeight: FontWeight.bold,
-                  fontSize: MediaQuery.of(context).size.width < 400 ? 20 : 28,
                   color: Colors.black,
                 ),
+                mobileFontSize: 20,
+                tabletFontSize: 22,
+                desktopFontSize: 24,
+                largeDesktopFontSize: 26,
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

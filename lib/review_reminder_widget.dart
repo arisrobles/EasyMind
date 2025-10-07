@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'memory_retention_system.dart';
+import 'responsive_utils.dart';
 
 /// Review Reminder Widget - Shows visual reminders for lessons due for review
 class ReviewReminderWidget extends StatefulWidget {
@@ -231,8 +232,11 @@ class _ReviewReminderWidgetState extends State<ReviewReminderWidget>
     // Show in-app reminder if available
     if (_showInAppReminder) {
       return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        padding: const EdgeInsets.all(20),
+        margin: EdgeInsets.symmetric(
+          horizontal: ResponsiveUtils.getResponsiveSpacing(context, mobile: 16),
+          vertical: ResponsiveUtils.getResponsiveSpacing(context, mobile: 8),
+        ),
+        padding: ResponsiveUtils.getResponsivePadding(context),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
@@ -242,10 +246,12 @@ class _ReviewReminderWidgetState extends State<ReviewReminderWidget>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(25),
+          borderRadius: BorderRadius.circular(
+            ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 25),
+          ),
           border: Border.all(
             color: Colors.amber.shade300,
-            width: 3,
+            width: ResponsiveUtils.isSmallScreen(context) ? 2 : 3,
           ),
           boxShadow: [
             BoxShadow(
@@ -260,30 +266,40 @@ class _ReviewReminderWidgetState extends State<ReviewReminderWidget>
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.all(
+                    ResponsiveUtils.getResponsiveSpacing(context, mobile: 12),
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [Colors.orange.shade400, Colors.red.shade400],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(
+                      ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 15),
+                    ),
                   ),
-                  child: const Icon(
+                  child: ResponsiveIcon(
                     Icons.notifications_active,
                     color: Colors.white,
-                    size: 28,
+                    mobileSize: 24,
+                    tabletSize: 26,
+                    desktopSize: 28,
+                    largeDesktopSize: 30,
                   ),
                 ),
-                const SizedBox(width: 15),
+                ResponsiveSpacing(mobileSpacing: 15, isVertical: false),
                 Expanded(
-                  child: Text(
+                  child: ResponsiveText(
                     _reminderMessage,
                     style: TextStyle(
-                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.orange.shade800,
                     ),
+                    mobileFontSize: 16,
+                    tabletFontSize: 18,
+                    desktopFontSize: 20,
+                    largeDesktopFontSize: 22,
                   ),
                 ),
                 IconButton(
@@ -296,7 +312,7 @@ class _ReviewReminderWidgetState extends State<ReviewReminderWidget>
                 ),
               ],
             ),
-            const SizedBox(height: 15),
+            ResponsiveSpacing(mobileSpacing: 15),
             LayoutBuilder(
               builder: (context, constraints) {
                 final screenWidth = MediaQuery.of(context).size.width;

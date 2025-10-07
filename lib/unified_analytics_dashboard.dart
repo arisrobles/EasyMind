@@ -11,6 +11,7 @@ import 'LearnMyFamily.dart';
 import 'MyFamilyAssessment.dart';
 import 'LetterTracing.dart';
 import 'flashcard_system.dart';
+import 'responsive_utils.dart';
 
 /// Unified Analytics Dashboard - Combines all analytics and tracking features
 class UnifiedAnalyticsDashboard extends StatefulWidget {
@@ -339,13 +340,16 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
     return Scaffold(
       backgroundColor: const Color(0xFFEFE9D5),
       appBar: AppBar(
-        title: Text(
+        title: ResponsiveText(
           '📊 Analytics Hub',
           style: TextStyle(
-            fontSize: 24,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
+          mobileFontSize: 20,
+          tabletFontSize: 24,
+          desktopFontSize: 28,
+          largeDesktopFontSize: 32,
         ),
         backgroundColor: const Color(0xFF648BA2),
         foregroundColor: Colors.white,
@@ -355,6 +359,15 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
           isScrollable: true,
+          labelStyle: TextStyle(
+            fontSize: ResponsiveUtils.getResponsiveFontSize(
+              context,
+              mobile: 12,
+              tablet: 14,
+              desktop: 16,
+              largeDesktop: 18,
+            ),
+          ),
           tabs: const [
             Tab(text: '📋 Learning', icon: Icon(Icons.school)),
             Tab(text: '📈 Progress', icon: Icon(Icons.trending_up)),
@@ -363,13 +376,20 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: ResponsiveIcon(
+              Icons.refresh,
+              color: Colors.white,
+              mobileSize: 20,
+              tabletSize: 24,
+              desktopSize: 28,
+              largeDesktopSize: 32,
+            ),
             onPressed: _loadAllData,
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF648BA2)),
               ),
@@ -386,25 +406,24 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
   }
 
   Widget _buildLearningTab() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 600;
-    
     return SingleChildScrollView(
-      padding: EdgeInsets.all(isSmallScreen ? 15 : 20),
+      padding: ResponsiveUtils.getResponsivePadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Kid-friendly header
           Container(
             width: double.infinity,
-            padding: EdgeInsets.all(isSmallScreen ? 15 : 20),
+            padding: ResponsiveUtils.getResponsivePadding(context),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(
+                ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 20),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.green.shade200,
@@ -415,28 +434,34 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
             ),
             child: Column(
               children: [
-                Text(
+                ResponsiveText(
                   '📚 Learning Hub',
                   style: TextStyle(
-                    fontSize: isSmallScreen ? 24 : 32,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
+                  mobileFontSize: 24,
+                  tabletFontSize: 28,
+                  desktopFontSize: 32,
+                  largeDesktopFontSize: 36,
                 ),
-                const SizedBox(height: 8),
-                Text(
+                ResponsiveSpacing(mobileSpacing: 8),
+                ResponsiveText(
                   'Track your learning progress and activity!',
                   style: TextStyle(
-                    fontSize: isSmallScreen ? 14 : 16,
                     color: Colors.white70,
                   ),
+                  mobileFontSize: 14,
+                  tabletFontSize: 16,
+                  desktopFontSize: 18,
+                  largeDesktopFontSize: 20,
                   textAlign: TextAlign.center,
                 ),
               ],
             ),
           ),
           
-          const SizedBox(height: 30),
+          ResponsiveSpacing(mobileSpacing: 30),
           
           // Review Reminder Widget
           ReviewReminderWidget(
@@ -444,22 +469,22 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
             onReviewCompleted: _loadAllData,
           ),
           
-          const SizedBox(height: 30),
+          ResponsiveSpacing(mobileSpacing: 30),
           
           // Lessons Due Section
           _buildLessonsDueSection(),
           
-          const SizedBox(height: 30),
+          ResponsiveSpacing(mobileSpacing: 30),
           
           // Recent Activity Section
           _buildRecentActivitySection(),
           
-          const SizedBox(height: 30),
+          ResponsiveSpacing(mobileSpacing: 30),
           
           // Most Active Items Section
           _buildMostActiveSection(),
           
-          const SizedBox(height: 30),
+          ResponsiveSpacing(mobileSpacing: 30),
           
           // Activity by Category Section
           _buildActivityByCategorySection(),
@@ -469,25 +494,24 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
   }
 
   Widget _buildProgressTab() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 600;
-    
     return SingleChildScrollView(
-      padding: EdgeInsets.all(isSmallScreen ? 15 : 20),
+      padding: ResponsiveUtils.getResponsivePadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
           Container(
             width: double.infinity,
-            padding: EdgeInsets.all(isSmallScreen ? 15 : 20),
+            padding: ResponsiveUtils.getResponsivePadding(context),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFF9C27B0), Color(0xFFBA68C8)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(
+                ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 20),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.purple.shade200,
@@ -498,58 +522,64 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
             ),
             child: Column(
               children: [
-                Text(
+                ResponsiveText(
                   '📈 Progress & Achievements',
                   style: TextStyle(
-                    fontSize: isSmallScreen ? 24 : 32,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
+                  mobileFontSize: 24,
+                  tabletFontSize: 28,
+                  desktopFontSize: 32,
+                  largeDesktopFontSize: 36,
                 ),
-                const SizedBox(height: 8),
-                Text(
+                ResponsiveSpacing(mobileSpacing: 8),
+                ResponsiveText(
                   'Track your learning progress and unlock achievements!',
                   style: TextStyle(
-                    fontSize: isSmallScreen ? 14 : 16,
                     color: Colors.white70,
                   ),
+                  mobileFontSize: 14,
+                  tabletFontSize: 16,
+                  desktopFontSize: 18,
+                  largeDesktopFontSize: 20,
                   textAlign: TextAlign.center,
                 ),
               ],
             ),
           ),
           
-          const SizedBox(height: 30),
+          ResponsiveSpacing(mobileSpacing: 30),
           
           // Progress Overview
           _buildProgressOverview(),
           
-          const SizedBox(height: 30),
+          ResponsiveSpacing(mobileSpacing: 30),
           
           // User Stats (Gamification)
           if (_userStats != null) _buildUserStats(),
           
-          const SizedBox(height: 30),
+          ResponsiveSpacing(mobileSpacing: 30),
           
           // Retention Statistics
           _buildRetentionStats(),
           
-          const SizedBox(height: 30),
+          ResponsiveSpacing(mobileSpacing: 30),
           
           // Badges Section
           _buildBadgesSection(),
           
-          const SizedBox(height: 30),
+          ResponsiveSpacing(mobileSpacing: 30),
           
           // Progress Chart
           _buildProgressChart(),
           
-          const SizedBox(height: 30),
+          ResponsiveSpacing(mobileSpacing: 30),
           
           // Leaderboard Section
           _buildLeaderboardSection(),
           
-          const SizedBox(height: 30),
+          ResponsiveSpacing(mobileSpacing: 30),
           
           // Level Ranks Guide
           _buildLevelRanksGuide(),
@@ -560,7 +590,7 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
 
   Widget _buildFocusTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 20),
+      padding: ResponsiveUtils.getResponsivePadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -577,7 +607,7 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
             },
           ),
           
-          const SizedBox(height: 30),
+          ResponsiveSpacing(mobileSpacing: 30),
           
           // Focus Statistics
           if (_focusStats != null) _buildFocusStats(),
