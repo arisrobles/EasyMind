@@ -5,6 +5,7 @@ import 'communication_skills.dart';
 import 'prevocational_skills.dart';
 import 'unified_analytics_dashboard.dart';
 import 'responsive_utils.dart';
+import 'UploadedMaterialsPage.dart';
 
 class Readingmaterialspage extends StatefulWidget {
   final String nickname;
@@ -314,6 +315,20 @@ class _ReadingmaterialspageState extends State<Readingmaterialspage> {
             context,
             MaterialPageRoute(
               builder: (context) => PreVocationalSkillsPage(nickname: widget.nickname),
+            ),
+          );
+        },
+      ),
+      _buildSubjectCard(
+        context,
+        label: "",
+        imagePath: 'assets/app.png',
+        onTap: () async {
+          await flutterTts.speak("Teacher's Materials");
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => UploadedMaterialsPage(),
             ),
           );
         },

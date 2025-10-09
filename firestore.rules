@@ -17,11 +17,17 @@ service cloud.firestore {
 
     // Rules for contents collection
     match /contents/{contentId} {
-      // Allow read if user is authenticated OR student nickname exists in the students collection
-      allow read: if request.auth != null || isStudentByNickname();
+      // Allow read for everyone (students can access without authentication)
+      allow read: if true;
       allow write: if request.auth != null && 
                    (request.resource.data.type == 'uploaded-material' || 
-                    request.resource.data.type == 'assessment');
+                    request.resource.data.type == 'assessment' ||
+                    request.resource.data.type == 'interactive-lesson' ||
+                    request.resource.data.type == 'game-activity' ||
+                    request.resource.data.type == 'interactive-assessment' ||
+                    request.resource.data.type == 'lesson' ||
+                    request.resource.data.type == 'game' ||
+                    request.resource.data.type == 'activity');
     }
 
     // Function to verify student by nickname passed in query param or request header

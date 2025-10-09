@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:open_file/open_file.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
+import 'interactive_content_viewer.dart';
 
 class UploadedMaterialsPage extends StatefulWidget {
   @override
@@ -43,7 +44,16 @@ class _UploadedMaterialsPageState extends State<UploadedMaterialsPage>
   void fetchMaterials() {
     FirebaseFirestore.instance
         .collection('contents')
-        .where('type', isEqualTo: 'uploaded-material')
+        .where('type', whereIn: [
+          'uploaded-material', 
+          'interactive-lesson', 
+          'game-activity', 
+          'interactive-assessment',
+          'lesson',  // New manually created lesson type
+          'assessment',  // New manually created assessment type
+          'game',  // New manually created game type
+          'activity'  // New manually created activity type
+        ])
         .orderBy('createdAt', descending: true)
         .snapshots()
         .listen(
@@ -52,7 +62,10 @@ class _UploadedMaterialsPageState extends State<UploadedMaterialsPage>
               setState(() {
                 materials =
                     querySnapshot.docs
-                        .map((doc) => doc.data() as Map<String, dynamic>)
+                        .map((doc) => {
+                              'id': doc.id,
+                              ...doc.data()
+                            })
                         .toList();
                 errorMessage =
                     _tabController.index == 0 && materials.isEmpty
@@ -92,7 +105,7 @@ class _UploadedMaterialsPageState extends State<UploadedMaterialsPage>
               setState(() {
                 assessments =
                     querySnapshot.docs
-                        .map((doc) => doc.data() as Map<String, dynamic>)
+                        .map((doc) => doc.data())
                         .toList();
                 errorMessage =
                     _tabController.index == 1 && assessments.isEmpty
@@ -306,13 +319,9 @@ class _UploadedMaterialsPageState extends State<UploadedMaterialsPage>
                                       ),
                                       elevation: 2,
                                       child: ListTile(
-                                        leading: Icon(
-                                          getFileIcon(fileType),
-                                          color: const Color(0xFF648BA2),
-                                          size: 40,
-                                        ),
+                                        leading: _getMaterialIcon(material['type']),
                                         title: Text(
-                                          fileName,
+                                          material['title'] ?? fileName,
                                           style: const TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -320,29 +329,22 @@ class _UploadedMaterialsPageState extends State<UploadedMaterialsPage>
                                             fontFamily: 'Montserrat',
                                           ),
                                         ),
-                                        subtitle: Text(
-                                          topic,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            color: Color(0xFF6EABCF),
-                                            fontFamily: 'Montserrat',
-                                          ),
-                                        ),
-                                        onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder:
-                                                  (context) =>
-                                                      MaterialDetailPage(
-                                                        fileName: fileName,
-                                                        fileType: fileType,
-                                                        fileData: fileData,
-                                                        topic: topic,
-                                                      ),
+                                        subtitle: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              topic,
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                color: Color(0xFF6EABCF),
+                                                fontFamily: 'Montserrat',
+                                              ),
                                             ),
-                                          );
-                                        },
+                                            _getContentTypeBadge(material['type']),
+                                          ],
+                                        ),
+                                        trailing: _getActionButton(material),
+                                        onTap: () => _onMaterialTap(material, fileName, fileType, fileData, topic),
                                       ),
                                     );
                                   },
@@ -423,6 +425,146 @@ class _UploadedMaterialsPageState extends State<UploadedMaterialsPage>
         ),
       ),
     );
+  }
+
+  // Helper methods for interactive content
+  Widget _getMaterialIcon(String? type) {
+    switch (type) {
+      case 'interactive-lesson':
+      case 'lesson':
+        return const Icon(
+          Icons.school,
+          color: Color(0xFF648BA2),
+          size: 40,
+        );
+      case 'game-activity':
+      case 'game':
+        return const Icon(
+          Icons.games,
+          color: Color(0xFF7B1FA2),
+          size: 40,
+        );
+      case 'interactive-assessment':
+      case 'assessment':
+        return const Icon(
+          Icons.quiz,
+          color: Color(0xFF388E3C),
+          size: 40,
+        );
+      case 'activity':
+        return const Icon(
+          Icons.extension,
+          color: Color(0xFF9C27B0),
+          size: 40,
+        );
+      default:
+        return Icon(
+          getFileIcon(null),
+          color: const Color(0xFF648BA2),
+          size: 40,
+        );
+    }
+  }
+
+  Widget _getContentTypeBadge(String? type) {
+    String text;
+    Color color;
+    
+    switch (type) {
+      case 'interactive-lesson':
+      case 'lesson':
+        text = '🎓 Interactive Lesson';
+        color = const Color(0xFF1976D2);
+        break;
+      case 'game-activity':
+      case 'game':
+        text = '🎮 Game Activity';
+        color = const Color(0xFF7B1FA2);
+        break;
+      case 'interactive-assessment':
+      case 'assessment':
+        text = '📝 Interactive Quiz';
+        color = const Color(0xFF388E3C);
+        break;
+      case 'activity':
+        text = '🎯 Learning Activity';
+        color = const Color(0xFF9C27B0);
+        break;
+      default:
+        text = '📄 File Download';
+        color = const Color(0xFFF57C00);
+    }
+    
+    return Container(
+      margin: const EdgeInsets.only(top: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 10,
+          color: color,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _getActionButton(Map<String, dynamic> material) {
+    final type = material['type'];
+    
+    if (type == 'interactive-lesson' || type == 'lesson' || 
+        type == 'game-activity' || type == 'game' || 
+        type == 'interactive-assessment' || type == 'assessment' ||
+        type == 'activity') {
+      return IconButton(
+        icon: const Icon(Icons.play_arrow, color: Color(0xFF648BA2)),
+        onPressed: () => _onMaterialTap(material, '', '', '', ''),
+      );
+    } else {
+      return IconButton(
+        icon: const Icon(Icons.download, color: Color(0xFF648BA2)),
+        onPressed: () => _onMaterialTap(material, '', '', '', ''),
+      );
+    }
+  }
+
+  void _onMaterialTap(Map<String, dynamic> material, String fileName, String? fileType, String? fileData, String topic) {
+    final type = material['type'];
+    
+    if (type == 'interactive-lesson' || type == 'lesson' || 
+        type == 'game-activity' || type == 'game' || 
+        type == 'interactive-assessment' || type == 'assessment' ||
+        type == 'activity') {
+      // Navigate to interactive content viewer
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => InteractiveContentViewer(
+            nickname: 'student', // You might want to pass the actual nickname
+            contentId: material['id'] ?? '',
+            contentData: material,
+          ),
+        ),
+      );
+    } else {
+      // Navigate to traditional file viewer
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MaterialDetailPage(
+            fileName: fileName,
+            fileType: fileType,
+            fileData: fileData,
+            topic: topic,
+          ),
+        ),
+      );
+    }
   }
 }
 
@@ -710,6 +852,7 @@ class _MaterialDetailPageState extends State<MaterialDetailPage> {
     if (_tempFilePath != null) {
       File(_tempFilePath!).delete().catchError((e) {
         print('Error deleting temp file: $e');
+        return File(_tempFilePath!);
       });
     }
     super.dispose();
