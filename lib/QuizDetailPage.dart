@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'dart:convert';
 
 class QuizDetailPage extends StatefulWidget {
   final String category;
@@ -12,6 +13,72 @@ class QuizDetailPage extends StatefulWidget {
 }
 
 class _QuizDetailPageState extends State<QuizDetailPage> {
+  
+  /// Build image widget for image-based questions
+  Widget _buildQuestionImage(String imageData) {
+    return Container(
+      width: double.infinity,
+      height: 200,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: _buildImageWidget(imageData),
+      ),
+    );
+  }
+
+  /// Build appropriate image widget based on image type
+  Widget _buildImageWidget(String imageData) {
+    // Check if it's a base64 image (starts with data:image)
+    if (imageData.startsWith('data:image/')) {
+      return Image.memory(
+        base64Decode(imageData.split(',')[1]), // Remove the data:image/...;base64, prefix
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildImageErrorWidget();
+        },
+      );
+    } else {
+      // It's an asset image
+      return Image.asset(
+        imageData,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildImageErrorWidget();
+        },
+      );
+    }
+  }
+
+  /// Build error widget for failed image loads
+  Widget _buildImageErrorWidget() {
+    return Container(
+      color: Colors.grey.shade200,
+      child: const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.image_not_supported,
+              size: 48,
+              color: Colors.grey,
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Image not available',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
   int currentQuestionIndex = 0;
   String? selectedAnswer;
   bool? isCorrect;
@@ -122,6 +189,12 @@ class _QuizDetailPageState extends State<QuizDetailPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
+                    
+                    // Image display for image-based questions
+                    if (question['usesImage'] == true && (question['imageUrl'] != null || question['imageBase64'] != null)) ...[
+                      _buildQuestionImage(question['imageBase64'] ?? question['imageUrl']),
+                      const SizedBox(height: 16),
+                    ],
                     if (question['type'] == 'multiple_choice') ...[
                       ...options.asMap().entries.map((entry) {
                         final option = entry.value as String;

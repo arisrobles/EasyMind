@@ -48,6 +48,9 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
   List<Map<String, dynamic>> _mostFrequentHistoricalActivities = [];
   bool _isLoading = true;
   
+  // Debounce mechanism to prevent excessive updates
+  DateTime? _lastUpdateTime;
+  
 
   @override
   void initState() {
@@ -61,6 +64,18 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  /// Debounced update to prevent excessive setState calls
+  void _debouncedUpdate(VoidCallback updateCallback) {
+    final now = DateTime.now();
+    if (_lastUpdateTime == null || 
+        now.difference(_lastUpdateTime!) > const Duration(milliseconds: 500)) {
+      _lastUpdateTime = now;
+      if (mounted) {
+        updateCallback();
+      }
+    }
   }
 
   Future<void> _loadAllData() async {
@@ -112,37 +127,64 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
         .snapshots()
         .listen((snapshot) {
       if (mounted) {
+        _debouncedUpdate(() {
         setState(() {
           _lessonsDue = snapshot.docs
               .map((doc) => doc.data())
               .toList();
+          });
         });
       }
     });
 
-    // Real-time listener for recent activity
+    // Real-time listener for recent activity - reload all data when any collection changes
     FirebaseFirestore.instance
         .collection('lessonRetention')
         .where('nickname', isEqualTo: widget.nickname)
-        .limit(20) // Get more records to sort in app
         .snapshots()
         .listen((snapshot) {
       if (mounted) {
+        // Only update recent activity, don't reload everything
+        _getRecentActivity().then((activity) {
+          _debouncedUpdate(() {
         setState(() {
-          _recentActivity = snapshot.docs
-              .map((doc) => doc.data())
-              .toList()
-              ..sort((a, b) {
-                // Sort by completedAt in descending order
-                final aTime = a['completedAt'] as Timestamp?;
-                final bTime = b['completedAt'] as Timestamp?;
-                if (aTime == null && bTime == null) return 0;
-                if (aTime == null) return 1;
-                if (bTime == null) return -1;
-                return bTime.compareTo(aTime);
-              });
-          // Take only the first 10 after sorting
-          _recentActivity = _recentActivity.take(10).toList();
+              _recentActivity = activity;
+            });
+          });
+        });
+      }
+    });
+    
+    FirebaseFirestore.instance
+        .collection('adaptiveAssessmentResults')
+        .where('nickname', isEqualTo: widget.nickname)
+        .snapshots()
+        .listen((snapshot) {
+      if (mounted) {
+        // Only update recent activity, don't reload everything
+        _getRecentActivity().then((activity) {
+          _debouncedUpdate(() {
+            setState(() {
+              _recentActivity = activity;
+            });
+          });
+        });
+      }
+    });
+    
+    FirebaseFirestore.instance
+        .collection('userActivities')
+        .where('nickname', isEqualTo: widget.nickname)
+        .snapshots()
+        .listen((snapshot) {
+      if (mounted) {
+        // Only update recent activity, don't reload everything
+        _getRecentActivity().then((activity) {
+          _debouncedUpdate(() {
+            setState(() {
+              _recentActivity = activity;
+            });
+          });
         });
       }
     });
@@ -154,8 +196,10 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
         .snapshots()
         .listen((snapshot) {
       if (mounted) {
+        _debouncedUpdate(() {
         setState(() {
           _focusStats = _calculateFocusStats(snapshot.docs);
+          });
         });
       }
     });
@@ -167,8 +211,10 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
         .snapshots()
         .listen((snapshot) {
       if (mounted) {
+        _debouncedUpdate(() {
         setState(() {
           _focusStats = _calculateFocusStatsWithBreaks(_focusStats, snapshot.docs);
+          });
         });
       }
     });
@@ -181,6 +227,7 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
         .listen((snapshot) {
       if (mounted && snapshot.exists) {
         final data = snapshot.data()!;
+        _debouncedUpdate(() {
         setState(() {
           _userStats = UserGamificationStats(
             nickname: widget.nickname,
@@ -192,6 +239,7 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
                 ? (data['lastLoginDate'] as Timestamp).toDate() 
                 : null,
           );
+          });
         });
       }
     });
@@ -203,6 +251,7 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
         .snapshots()
         .listen((snapshot) {
       if (mounted) {
+        _debouncedUpdate(() {
         setState(() {
           _badges = snapshot.docs.map((doc) {
             final data = doc.data();
@@ -212,6 +261,7 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
               badgeDefinition: _gamificationSystem.getBadgeDefinition(data['badgeId']),
             );
           }).toList();
+          });
         });
       }
     });
@@ -224,6 +274,7 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
         .snapshots()
         .listen((snapshot) {
       if (mounted) {
+        _debouncedUpdate(() {
         setState(() {
           _leaderboard = snapshot.docs.asMap().entries.map((entry) {
             final data = entry.value.data();
@@ -235,6 +286,7 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
               badgeCount: data['badgeCount'] ?? 0,
             );
           }).toList();
+          });
         });
       }
     });
@@ -307,28 +359,197 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
   }
 
   Future<List<Map<String, dynamic>>> _getRecentActivity() async {
-    // Get real recent activity from Firebase
+    // Get comprehensive recent activity from multiple Firebase collections
     try {
-      final querySnapshot = await FirebaseFirestore.instance
+      print('DEBUG: Analytics Dashboard - Fetching recent activity for ${widget.nickname}');
+      final List<Map<String, dynamic>> allActivities = [];
+      final Set<String> processedContentIds = {}; // Track processed content to avoid duplicates
+      
+      // Get activities from adaptiveAssessmentResults collection (primary source for assessments)
+      final adaptiveAssessmentQuery = await FirebaseFirestore.instance
+          .collection('adaptiveAssessmentResults')
+          .where('nickname', isEqualTo: widget.nickname)
+          .limit(20)
+          .get();
+      
+      print('DEBUG: Analytics Dashboard - Found ${adaptiveAssessmentQuery.docs.length} adaptive assessment records');
+      for (final doc in adaptiveAssessmentQuery.docs) {
+        final data = doc.data();
+        print('DEBUG: Analytics Dashboard - Assessment data: ${data}');
+        
+        // Get the actual assessment title from the contents collection
+        String assessmentTitle = 'Unknown Assessment';
+        try {
+          if (data['contentId'] != null && data['contentId'].toString().isNotEmpty) {
+            final contentDoc = await FirebaseFirestore.instance
+                .collection('contents')
+                .doc(data['contentId'].toString())
+                .get();
+            if (contentDoc.exists) {
+              assessmentTitle = contentDoc.data()?['title'] ?? 'Unknown Assessment';
+            }
+          }
+          
+          // If still unknown, try to use moduleName as fallback
+          if (assessmentTitle == 'Unknown Assessment' && data['moduleName'] != null) {
+            assessmentTitle = data['moduleName'].toString();
+          }
+        } catch (e) {
+          print('DEBUG: Could not fetch assessment title: $e');
+          // Use moduleName as fallback if available
+          if (data['moduleName'] != null) {
+            assessmentTitle = data['moduleName'].toString();
+          }
+        }
+        
+        // Mark this content as processed
+        if (data['contentId'] != null) {
+          processedContentIds.add(data['contentId'].toString());
+        }
+        
+        allActivities.add({
+          ...data,
+          'source': 'adaptiveAssessmentResults',
+          'activityType': 'assessment_completion',
+          'moduleName': data['moduleName'] ?? 'Unknown Assessment',
+          'lessonType': assessmentTitle, // Use actual assessment title
+          'assessmentTitle': assessmentTitle, // Store the title separately too
+          'score': data['correctAnswers'] ?? 0,
+          'totalQuestions': data['totalQuestions'] ?? 0,
+          'completedAt': data['timestamp'] ?? data['date'],
+          'passed': (data['performance'] ?? 0.0) >= 0.7,
+        });
+      }
+      
+      // Get activities from lessonRetention collection (for lessons, not assessments)
+      final lessonRetentionQuery = await FirebaseFirestore.instance
           .collection('lessonRetention')
           .where('nickname', isEqualTo: widget.nickname)
-          .limit(20) // Get more records to sort in app
+          .limit(20)
           .get();
 
-      final activities = querySnapshot.docs.map((doc) => doc.data()).toList();
+      print('DEBUG: Analytics Dashboard - Found ${lessonRetentionQuery.docs.length} lesson retention records');
+      for (final doc in lessonRetentionQuery.docs) {
+        final data = doc.data();
+        
+        // Skip if this is an assessment that we already processed
+        if (data['contentId'] != null && processedContentIds.contains(data['contentId'].toString())) {
+          continue; // Skip duplicate
+        }
+        
+        allActivities.add({
+          ...data,
+          'source': 'lessonRetention',
+          'activityType': 'lesson_completion',
+        });
+      }
       
-      // Sort by completedAt in descending order
-      activities.sort((a, b) {
-        final aTime = a['completedAt'] as Timestamp?;
-        final bTime = b['completedAt'] as Timestamp?;
+      // Get activities from userActivities collection (gamification - only for non-assessment activities)
+      final userActivitiesQuery = await FirebaseFirestore.instance
+          .collection('userActivities')
+          .where('nickname', isEqualTo: widget.nickname)
+          .limit(20)
+          .get();
+      
+      print('DEBUG: Analytics Dashboard - Found ${userActivitiesQuery.docs.length} user activity records');
+      for (final doc in userActivitiesQuery.docs) {
+        final data = doc.data();
+        print('DEBUG: Analytics Dashboard - User activity data: ${data}');
+        
+        // Skip gamification activities that are related to assessments we already processed
+        if (data['contentId'] != null && processedContentIds.contains(data['contentId'].toString())) {
+          continue; // Skip duplicate
+        }
+        
+        // Skip assessment-related gamification activities (even without contentId)
+        final activity = data['activity']?.toString().toLowerCase() ?? '';
+        if (activity == 'perfect_score' || 
+            activity == 'assessment_passed' || 
+            activity == 'lesson_completed' ||
+            activity.contains('assessment') ||
+            activity.contains('lesson')) {
+          continue; // Skip assessment-related gamification activities
+        }
+        
+        // Only include pure gamification activities (like badges, streaks, etc.)
+        if (data['activity'] != null && 
+            !activity.contains('assessment') &&
+            !activity.contains('lesson') &&
+            !activity.contains('score') &&
+            !activity.contains('passed')) {
+          allActivities.add({
+            ...data,
+            'source': 'userActivities',
+            'activityType': 'gamification_activity',
+            'moduleName': data['activity'] ?? 'Unknown Activity',
+            'lessonType': data['activity'] ?? 'activity',
+            'score': data['xpAwarded'] ?? 0,
+            'totalQuestions': 1, // XP activities are single events
+            'completedAt': data['timestamp'] ?? data['date'],
+            'passed': true, // XP activities are always "passed"
+          });
+        }
+      }
+      
+      // Consolidate duplicate activities (same contentId and similar timestamp)
+      final Map<String, Map<String, dynamic>> consolidatedActivities = {};
+      
+      for (final activity in allActivities) {
+        final contentId = activity['contentId']?.toString();
+        final timestamp = activity['completedAt'] ?? activity['timestamp'];
+        
+        if (contentId != null && contentId.isNotEmpty) {
+          final key = contentId;
+          
+          if (consolidatedActivities.containsKey(key)) {
+            // Merge with existing activity, prioritizing adaptiveAssessmentResults
+            final existing = consolidatedActivities[key]!;
+            if (activity['source'] == 'adaptiveAssessmentResults') {
+              // Replace with assessment data (more complete)
+              consolidatedActivities[key] = activity;
+            } else if (existing['source'] != 'adaptiveAssessmentResults') {
+              // Keep the existing one if it's not assessment data
+              continue;
+            }
+          } else {
+            consolidatedActivities[key] = activity;
+          }
+        } else {
+          // Activities without contentId (like pure gamification activities)
+          final key = '${activity['source']}_${activity['activity']}_${timestamp}';
+          consolidatedActivities[key] = activity;
+        }
+      }
+      
+      // Convert back to list
+      final consolidatedList = consolidatedActivities.values.toList();
+      
+      // Sort all activities by completedAt/timestamp in descending order
+      consolidatedList.sort((a, b) {
+        Timestamp? aTime;
+        Timestamp? bTime;
+        
+        // Try different timestamp fields
+        if (a['completedAt'] != null) {
+          aTime = a['completedAt'] as Timestamp?;
+        } else if (a['timestamp'] != null) {
+          aTime = a['timestamp'] as Timestamp?;
+        }
+        
+        if (b['completedAt'] != null) {
+          bTime = b['completedAt'] as Timestamp?;
+        } else if (b['timestamp'] != null) {
+          bTime = b['timestamp'] as Timestamp?;
+        }
+        
         if (aTime == null && bTime == null) return 0;
         if (aTime == null) return 1;
         if (bTime == null) return -1;
         return bTime.compareTo(aTime);
       });
       
-      // Return only the first 5 after sorting
-      return activities.take(5).toList();
+      // Return only the first 10 after sorting
+      return consolidatedList.take(10).toList();
     } catch (e) {
       print('Error getting recent activity: $e');
       return [];
@@ -384,7 +605,10 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
               desktopSize: 28,
               largeDesktopSize: 32,
             ),
-            onPressed: _loadAllData,
+            onPressed: () {
+              print('DEBUG: Analytics Dashboard - Manual refresh triggered');
+              _loadAllData();
+            },
           ),
         ],
       ),
@@ -924,10 +1148,11 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
         children: [
           Row(
             children: [
-              Text(
+              Expanded(
+                child: Text(
                 '⭐ Your Recent Achievements',
             style: TextStyle(
-                  fontSize: isSmallScreen ? 20 : 24,
+                    fontSize: isSmallScreen ? 18 : 20, // Reduced font size
               fontWeight: FontWeight.bold,
                   color: Colors.white,
                   shadows: [
@@ -939,7 +1164,7 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
                   ],
                 ),
               ),
-              const Spacer(),
+              ),
               if (_recentActivity.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -1687,6 +1912,43 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
     );
   }
 
+  /// Get display title for activity with proper fallback logic
+  String _getDisplayTitle(Map<String, dynamic> activity) {
+    // Try different title fields in order of preference
+    if (activity['assessmentTitle'] != null && 
+        activity['assessmentTitle'].toString().isNotEmpty &&
+        activity['assessmentTitle'] != 'Unknown Assessment') {
+      return activity['assessmentTitle'].toString();
+    }
+    
+    if (activity['lessonType'] != null && 
+        activity['lessonType'].toString().isNotEmpty &&
+        activity['lessonType'] != 'assessment_passed' &&
+        activity['lessonType'] != 'perfect_score' &&
+        activity['lessonType'] != 'lesson_completed' &&
+        activity['lessonType'] != 'Unknown Activity') {
+      return activity['lessonType'].toString();
+    }
+    
+    if (activity['moduleName'] != null && 
+        activity['moduleName'].toString().isNotEmpty &&
+        activity['moduleName'] != 'perfect_score' &&
+        activity['moduleName'] != 'assessment_passed') {
+      return activity['moduleName'].toString();
+    }
+    
+    if (activity['activity'] != null && 
+        activity['activity'].toString().isNotEmpty &&
+        activity['activity'] != 'perfect_score' &&
+        activity['activity'] != 'assessment_passed' &&
+        activity['activity'] != 'lesson_completed') {
+      return activity['activity'].toString();
+    }
+    
+    // Final fallback
+    return 'Learning Activity';
+  }
+
   Widget _buildActivityCard(Map<String, dynamic> activity) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 600;
@@ -1727,7 +1989,7 @@ class _UnifiedAnalyticsDashboardState extends State<UnifiedAnalyticsDashboard> w
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  activity['lessonType'] ?? 'Unknown Lesson',
+                  _getDisplayTitle(activity),
                       style: TextStyle(
                         fontSize: isSmallScreen ? 16 : 18,
                     fontWeight: FontWeight.bold,

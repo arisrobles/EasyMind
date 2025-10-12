@@ -223,6 +223,9 @@ flutter:
     - assets/sound/bark1.mp3
     - assets/sound/bark2.mp3
     - assets/sound/bark3.mp3
+    - assets/sound/success.mp3
+    - assets/sound/error.mp3
+    - assets/sound/start.mp3
 
     # ✅ Video assets
     - assets/videos/drinking.mp4

@@ -9,6 +9,10 @@ import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'interactive_content_viewer.dart';
 
 class UploadedMaterialsPage extends StatefulWidget {
+  final String nickname;
+  
+  const UploadedMaterialsPage({super.key, required this.nickname});
+  
   @override
   _UploadedMaterialsPageState createState() => _UploadedMaterialsPageState();
 }
@@ -17,6 +21,7 @@ class _UploadedMaterialsPageState extends State<UploadedMaterialsPage>
     with SingleTickerProviderStateMixin {
   List<Map<String, dynamic>> materials = [];
   List<Map<String, dynamic>> assessments = [];
+  Set<String> completedAssessments = {}; // Track completed assessment IDs
   String? errorMessage;
   late TabController _tabController;
   int? _hoveredTabIndex;
@@ -27,6 +32,7 @@ class _UploadedMaterialsPageState extends State<UploadedMaterialsPage>
     _tabController = TabController(length: 2, vsync: this);
     fetchMaterials();
     fetchAssessments();
+    fetchCompletedAssessments();
     _tabController.addListener(() {
       setState(() {
         errorMessage = null;
@@ -47,10 +53,8 @@ class _UploadedMaterialsPageState extends State<UploadedMaterialsPage>
         .where('type', whereIn: [
           'uploaded-material', 
           'interactive-lesson', 
-          'game-activity', 
-          'interactive-assessment',
+          'game-activity',
           'lesson',  // New manually created lesson type
-          'assessment',  // New manually created assessment type
           'game',  // New manually created game type
           'activity'  // New manually created activity type
         ])
@@ -96,7 +100,10 @@ class _UploadedMaterialsPageState extends State<UploadedMaterialsPage>
   void fetchAssessments() {
     FirebaseFirestore.instance
         .collection('contents')
-        .where('type', isEqualTo: 'assessment')
+        .where('type', whereIn: [
+          'assessment',
+          'interactive-assessment'
+        ])
         .orderBy('createdAt', descending: true)
         .snapshots()
         .listen(
@@ -105,7 +112,10 @@ class _UploadedMaterialsPageState extends State<UploadedMaterialsPage>
               setState(() {
                 assessments =
                     querySnapshot.docs
-                        .map((doc) => doc.data())
+                        .map((doc) => {
+                              'id': doc.id,
+                              ...doc.data()
+                            })
                         .toList();
                 errorMessage =
                     _tabController.index == 1 && assessments.isEmpty
@@ -130,6 +140,21 @@ class _UploadedMaterialsPageState extends State<UploadedMaterialsPage>
             print('Error fetching assessments: $error');
           },
         );
+  }
+
+  void fetchCompletedAssessments() {
+    FirebaseFirestore.instance
+        .collection('completedAssessments')
+        .where('nickname', isEqualTo: widget.nickname)
+        .snapshots()
+        .listen((snapshot) {
+      setState(() {
+        completedAssessments = snapshot.docs
+            .map((doc) => doc.data()['contentId'] as String)
+            .toSet();
+        print('Completed assessments: ${completedAssessments.length}');
+      });
+    });
   }
 
   IconData getFileIcon(String? fileType) {
@@ -340,7 +365,12 @@ class _UploadedMaterialsPageState extends State<UploadedMaterialsPage>
                                                 fontFamily: 'Montserrat',
                                               ),
                                             ),
-                                            _getContentTypeBadge(material['type']),
+                                            const SizedBox(height: 4),
+                                            Row(
+                                              children: [
+                                                _getContentTypeBadge(material['type']),
+                                              ],
+                                            ),
                                           ],
                                         ),
                                         trailing: _getActionButton(material),
@@ -365,54 +395,124 @@ class _UploadedMaterialsPageState extends State<UploadedMaterialsPage>
                                     final category =
                                         assessment['category']?.toString() ??
                                         'No Category';
-                                    final questions =
-                                        assessment['questions']
-                                            as List<dynamic>? ??
-                                        [];
+                                    // Handle both old and new assessment data structures
+                                    List<dynamic> questions = [];
+                                    if (assessment['questions'] != null) {
+                                      questions = assessment['questions'] as List<dynamic>;
+                                    } else if (assessment['assessmentData'] != null && 
+                                               assessment['assessmentData']['questions'] != null) {
+                                      questions = assessment['assessmentData']['questions'] as List<dynamic>;
+                                    }
 
+                                    final isCompleted = completedAssessments.contains(assessment['id']);
+                                    
                                     return Card(
-                                      color: Colors.white,
+                                      color: isCompleted ? Colors.green.shade50 : Colors.white,
                                       margin: const EdgeInsets.symmetric(
                                         vertical: 8.0,
                                       ),
                                       elevation: 2,
                                       child: ListTile(
-                                        leading: const Icon(
-                                          Icons.quiz,
-                                          color: Color(0xFF648BA2),
-                                          size: 40,
+                                        leading: Stack(
+                                          children: [
+                                            _getMaterialIcon(assessment['type']),
+                                            if (isCompleted)
+                                              Positioned(
+                                                right: 0,
+                                                top: 0,
+                                                child: Container(
+                                                  padding: const EdgeInsets.all(2),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.green,
+                                                    borderRadius: BorderRadius.circular(10),
+                                                  ),
+                                                  child: const Icon(
+                                                    Icons.check,
+                                                    color: Colors.white,
+                                                    size: 12,
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
                                         ),
-                                        title: Text(
-                                          title,
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF4A4E69),
-                                            fontFamily: 'Montserrat',
-                                          ),
-                                        ),
-                                        subtitle: Text(
-                                          '$category • ${questions.length} Questions',
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            color: Color(0xFF6EABCF),
-                                            fontFamily: 'Montserrat',
-                                          ),
-                                        ),
-                                        onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder:
-                                                  (context) =>
-                                                      AssessmentDetailPage(
-                                                        title: title,
-                                                        category: category,
-                                                        questions: questions,
-                                                      ),
+                                        title: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                title,
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: isCompleted ? Colors.green.shade700 : const Color(0xFF4A4E69),
+                                                  fontFamily: 'Montserrat',
+                                                ),
+                                              ),
                                             ),
-                                          );
-                                        },
+                                            if (isCompleted)
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.green,
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                child: const Text(
+                                                  'COMPLETED',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                        subtitle: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              '$category • ${questions.length} Questions',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color: isCompleted ? Colors.green.shade600 : const Color(0xFF6EABCF),
+                                                fontFamily: 'Montserrat',
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Row(
+                                              children: [
+                                                _getContentTypeBadge(assessment['type']),
+                                                if (isCompleted) ...[
+                                                  const SizedBox(width: 8),
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.green.shade100,
+                                                      borderRadius: BorderRadius.circular(8),
+                                                      border: Border.all(color: Colors.green.shade300),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        Icon(Icons.star, color: Colors.green.shade600, size: 12),
+                                                        const SizedBox(width: 2),
+                                                        Text(
+                                                          'Completed',
+                                                          style: TextStyle(
+                                                            color: Colors.green.shade700,
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                        trailing: _getActionButton(assessment, isCompleted),
+                                        onTap: () => _onMaterialTap(assessment, '', '', '', ''),
                                       ),
                                     );
                                   },
@@ -514,17 +614,35 @@ class _UploadedMaterialsPageState extends State<UploadedMaterialsPage>
     );
   }
 
-  Widget _getActionButton(Map<String, dynamic> material) {
+  Widget _getActionButton(Map<String, dynamic> material, [bool isCompleted = false]) {
     final type = material['type'];
     
     if (type == 'interactive-lesson' || type == 'lesson' || 
         type == 'game-activity' || type == 'game' || 
         type == 'interactive-assessment' || type == 'assessment' ||
         type == 'activity') {
-      return IconButton(
-        icon: const Icon(Icons.play_arrow, color: Color(0xFF648BA2)),
-        onPressed: () => _onMaterialTap(material, '', '', '', ''),
-      );
+      
+      if (isCompleted && (type == 'assessment' || type == 'interactive-assessment')) {
+        // Show completed icon for assessments
+        return Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.green.shade100,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.green.shade300),
+          ),
+          child: Icon(
+            Icons.check_circle,
+            color: Colors.green.shade600,
+            size: 20,
+          ),
+        );
+      } else {
+        return IconButton(
+          icon: const Icon(Icons.play_arrow, color: Color(0xFF648BA2)),
+          onPressed: () => _onMaterialTap(material, '', '', '', ''),
+        );
+      }
     } else {
       return IconButton(
         icon: const Icon(Icons.download, color: Color(0xFF648BA2)),
@@ -532,6 +650,7 @@ class _UploadedMaterialsPageState extends State<UploadedMaterialsPage>
       );
     }
   }
+
 
   void _onMaterialTap(Map<String, dynamic> material, String fileName, String? fileType, String? fileData, String topic) {
     final type = material['type'];
@@ -545,7 +664,7 @@ class _UploadedMaterialsPageState extends State<UploadedMaterialsPage>
         context,
         MaterialPageRoute(
           builder: (context) => InteractiveContentViewer(
-            nickname: 'student', // You might want to pass the actual nickname
+            nickname: widget.nickname, // Use the actual student's nickname
             contentId: material['id'] ?? '',
             contentData: material,
           ),

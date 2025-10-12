@@ -319,21 +319,155 @@ class _ReadingmaterialspageState extends State<Readingmaterialspage> {
           );
         },
       ),
-      _buildSubjectCard(
-        context,
-        label: "",
-        imagePath: 'assets/app.png',
+      _buildTeacherMaterialsCard(context),
+    ];
+  }
+
+  Widget _buildTeacherMaterialsCard(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF4A90E2),
+            Color(0xFF357ABD),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(
+          ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 30),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0xFF4A90E2).withOpacity(0.3),
+            spreadRadius: 3,
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: InkWell(
         onTap: () async {
-          await flutterTts.speak("Teacher's Materials");
+          await flutterTts.speak("Teacher's Special Materials");
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => UploadedMaterialsPage(),
+              builder: (context) => UploadedMaterialsPage(nickname: widget.nickname),
             ),
           );
         },
+        borderRadius: BorderRadius.circular(
+          ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 30),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(
+            ResponsiveUtils.getResponsiveSpacing(context, mobile: 20),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Special icon with animation effect
+              Container(
+                padding: EdgeInsets.all(
+                  ResponsiveUtils.getResponsiveSpacing(context, mobile: 12),
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: Icon(
+                  Icons.school,
+                  size: ResponsiveUtils.getResponsiveIconSize(context, mobile: 60),
+                  color: Colors.white,
+                ),
+              ),
+              ResponsiveSpacing(mobileSpacing: 12),
+              
+              // Engaging title
+              ResponsiveText(
+                "🎓 Teacher's Special Materials",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withOpacity(0.3),
+                      offset: Offset(1, 1),
+                      blurRadius: 2,
+                    ),
+                  ],
+                ),
+                mobileFontSize: 18,
+                tabletFontSize: 20,
+                desktopFontSize: 22,
+                largeDesktopFontSize: 24,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              
+              ResponsiveSpacing(mobileSpacing: 8),
+              
+              // Motivational message
+              ResponsiveText(
+                "Want to level up your intelligence? Discover curated lessons and assessments to earn more rewards! 🚀",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.9),
+                  fontWeight: FontWeight.w500,
+                ),
+                mobileFontSize: 12,
+                tabletFontSize: 14,
+                desktopFontSize: 16,
+                largeDesktopFontSize: 18,
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
+              ),
+              
+              ResponsiveSpacing(mobileSpacing: 12),
+              
+              // Call-to-action button
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: ResponsiveUtils.getResponsiveSpacing(context, mobile: 16),
+                  vertical: ResponsiveUtils.getResponsiveSpacing(context, mobile: 8),
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.rocket_launch,
+                      color: Colors.white,
+                      size: ResponsiveUtils.getResponsiveIconSize(context, mobile: 16),
+                    ),
+                    ResponsiveSpacing(mobileSpacing: 4, isVertical: false),
+                    ResponsiveText(
+                      "Explore Now",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      mobileFontSize: 12,
+                      tabletFontSize: 14,
+                      desktopFontSize: 16,
+                      largeDesktopFontSize: 18,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-    ];
+    );
   }
 
   Widget _buildSubjectCard(

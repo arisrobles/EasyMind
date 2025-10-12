@@ -215,11 +215,11 @@ class VisitTrackingSystem {
         });
       }
 
-      // Fetch from assessment results
+      // Fetch from assessment results (using correct collection name)
       final assessmentResults = await _firestore
-          .collection('assessmentResults')
+          .collection('adaptiveAssessmentResults')
           .where('nickname', isEqualTo: nickname)
-          .orderBy('completedAt', descending: true)
+          .orderBy('timestamp', descending: true)
           .get();
 
       for (final doc in assessmentResults.docs) {
@@ -228,10 +228,10 @@ class VisitTrackingSystem {
           'itemType': 'assessment',
           'itemName': data['assessmentType'] ?? 'Unknown Assessment',
           'moduleName': data['moduleName'] ?? 'Unknown Module',
-          'completedAt': data['completedAt'],
-          'date': _formatDate(data['completedAt']),
-          'score': data['score'] ?? 0,
-          'source': 'assessmentResult',
+          'completedAt': data['timestamp'] ?? data['date'], // Use correct field names
+          'date': _formatDate(data['timestamp'] ?? data['date']),
+          'score': data['correctAnswers'] ?? 0, // Use correct field name
+          'source': 'adaptiveAssessmentResult',
         });
       }
 

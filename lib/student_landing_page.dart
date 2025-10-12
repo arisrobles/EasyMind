@@ -494,22 +494,7 @@ class _StudentLandingPageState extends State<StudentLandingPage> {
     if (screenType == ScreenType.mobile) {
       return Column(
         children: [
-          CustomCardButton(
-            key: _readingKey,
-            imagePath: 'assets/lrn.png',
-            title: '',
-            width: double.infinity,
-            height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 200),
-            onTap: () async {
-              await _speak("Learning Materials");
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Readingmaterialspage(nickname: widget.nickname),
-                ),
-              );
-            },
-          ),
+          _buildEnhancedLearningCard(context),
           ResponsiveSpacing(mobileSpacing: 16),
           CustomCardButton(
             key: _gamesKey,
@@ -535,22 +520,7 @@ class _StudentLandingPageState extends State<StudentLandingPage> {
         runSpacing: ResponsiveUtils.getResponsiveSpacing(context, mobile: 20),
         alignment: WrapAlignment.center,
         children: [
-          CustomCardButton(
-            key: _readingKey,
-            imagePath: 'assets/lrn.png',
-            title: '',
-            width: ResponsiveUtils.getResponsiveCardWidth(context),
-            height: ResponsiveUtils.getResponsiveIconSize(context, mobile: 300),
-            onTap: () async {
-              await _speak("Learning Materials");
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Readingmaterialspage(nickname: widget.nickname),
-                ),
-              );
-            },
-          ),
+          _buildEnhancedLearningCard(context),
           CustomCardButton(
             key: _gamesKey,
             imagePath: 'assets/games.png',
@@ -570,6 +540,159 @@ class _StudentLandingPageState extends State<StudentLandingPage> {
         ],
       );
     }
+  }
+
+  Widget _buildEnhancedLearningCard(BuildContext context) {
+    final screenType = ResponsiveUtils.getScreenType(context);
+    final cardWidth = screenType == ScreenType.mobile 
+        ? double.infinity 
+        : ResponsiveUtils.getResponsiveCardWidth(context);
+    final cardHeight = ResponsiveUtils.getResponsiveIconSize(context, mobile: 200);
+    
+    return Container(
+      key: _readingKey,
+      width: cardWidth,
+      height: cardHeight,
+      child: GestureDetector(
+        onTap: () async {
+          await _speak("Learning Materials");
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Readingmaterialspage(nickname: widget.nickname),
+            ),
+          );
+        },
+        child: Card(
+          color: const Color(0xFFFFF9E4),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 20),
+            ),
+          ),
+          elevation: ResponsiveUtils.isSmallScreen(context) ? 8 : 12,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(
+                ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 20),
+              ),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFFFF9E4),
+                  Color(0xFFF0E68C).withOpacity(0.3),
+                ],
+              ),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(
+                ResponsiveUtils.getResponsiveSpacing(context, mobile: 16),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Enhanced header with icon and title
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Color(0xFF648BA2).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.school,
+                          color: Color(0xFF648BA2),
+                          size: ResponsiveUtils.getResponsiveIconSize(context, mobile: 24),
+                        ),
+                      ),
+                      ResponsiveSpacing(mobileSpacing: 8, isVertical: false),
+                      Expanded(
+                        child: ResponsiveText(
+                          "📚 Learning Materials",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF4A4E69),
+                            fontFamily: 'Poppins',
+                          ),
+                          mobileFontSize: 18,
+                          tabletFontSize: 20,
+                          desktopFontSize: 22,
+                          largeDesktopFontSize: 24,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  ResponsiveSpacing(mobileSpacing: 12),
+                  
+                  // Motivational message
+                  ResponsiveText(
+                    "Discover amazing lessons and earn rewards! 🎯",
+                    style: TextStyle(
+                      color: Color(0xFF648BA2),
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Poppins',
+                    ),
+                    mobileFontSize: 14,
+                    tabletFontSize: 16,
+                    desktopFontSize: 18,
+                    largeDesktopFontSize: 20,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  
+                  ResponsiveSpacing(mobileSpacing: 8),
+                  
+                  // Call-to-action
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: ResponsiveUtils.getResponsiveSpacing(context, mobile: 12),
+                      vertical: ResponsiveUtils.getResponsiveSpacing(context, mobile: 6),
+                    ),
+                    decoration: BoxDecoration(
+                      color: Color(0xFF648BA2).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(
+                        color: Color(0xFF648BA2).withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.rocket_launch,
+                          color: Color(0xFF648BA2),
+                          size: ResponsiveUtils.getResponsiveIconSize(context, mobile: 14),
+                        ),
+                        ResponsiveSpacing(mobileSpacing: 4, isVertical: false),
+                        ResponsiveText(
+                          "Start Learning",
+                          style: TextStyle(
+                            color: Color(0xFF648BA2),
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins',
+                          ),
+                          mobileFontSize: 12,
+                          tabletFontSize: 14,
+                          desktopFontSize: 16,
+                          largeDesktopFontSize: 18,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildIconOnlyButton({

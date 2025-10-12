@@ -86,17 +86,32 @@ class _ProgressAnalyticsDashboardState extends State<ProgressAnalyticsDashboard>
 
   Future<Map<String, dynamic>> _getProgressData() async {
     try {
-      // Get comprehensive progress data
+      print('DEBUG: Progress Analytics - Fetching progress data for ${widget.nickname}');
+      
+      // Get comprehensive progress data from multiple collections
       final userStatsDoc = await _firestore.collection('userStats').doc(widget.nickname).get();
       final userStats = userStatsDoc.exists ? userStatsDoc.data()! : {};
+      print('DEBUG: Progress Analytics - User stats: ${userStats}');
 
+      // Get lesson retention data
       final lessonRetentionQuery = await _firestore
           .collection('lessonRetention')
           .where('nickname', isEqualTo: widget.nickname)
           .get();
       
       final lessons = lessonRetentionQuery.docs.map((doc) => doc.data()).toList();
+      print('DEBUG: Progress Analytics - Found ${lessons.length} lesson retention records');
 
+      // Get adaptive assessment results
+      final adaptiveAssessmentQuery = await _firestore
+          .collection('adaptiveAssessmentResults')
+          .where('nickname', isEqualTo: widget.nickname)
+          .get();
+      
+      final assessments = adaptiveAssessmentQuery.docs.map((doc) => doc.data()).toList();
+      print('DEBUG: Progress Analytics - Found ${assessments.length} adaptive assessment records');
+
+      // Get focus sessions
       final focusQuery = await _firestore
           .collection('focusSessions')
           .where('nickname', isEqualTo: widget.nickname)
@@ -104,6 +119,7 @@ class _ProgressAnalyticsDashboardState extends State<ProgressAnalyticsDashboard>
       
       final focusSessions = focusQuery.docs.map((doc) => doc.data()).toList();
 
+      // Get badges
       final badgesQuery = await _firestore
           .collection('userBadges')
           .where('nickname', isEqualTo: widget.nickname)
@@ -111,14 +127,25 @@ class _ProgressAnalyticsDashboardState extends State<ProgressAnalyticsDashboard>
       
       final badges = badgesQuery.docs.map((doc) => doc.data()).toList();
 
+      // Get user activities (gamification)
+      final userActivitiesQuery = await _firestore
+          .collection('userActivities')
+          .where('nickname', isEqualTo: widget.nickname)
+          .get();
+      
+      final userActivities = userActivitiesQuery.docs.map((doc) => doc.data()).toList();
+      print('DEBUG: Progress Analytics - Found ${userActivities.length} user activity records');
+
       return {
         'userStats': userStats,
         'lessons': lessons,
+        'assessments': assessments,
         'focusSessions': focusSessions,
         'badges': badges,
+        'userActivities': userActivities,
       };
     } catch (e) {
-      // Error getting progress data: $e
+      print('Error getting progress data: $e');
       return {};
     }
   }

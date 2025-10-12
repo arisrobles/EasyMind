@@ -28,6 +28,7 @@ class AdaptiveAssessmentSystem {
     required Duration timeSpent,
     required List<String> attemptedQuestions,
     required List<String> correctQuestions,
+    String? contentId, // Add contentId parameter
   }) async {
     try {
       final performance = _calculatePerformance(correctAnswers, totalQuestions);
@@ -47,6 +48,7 @@ class AdaptiveAssessmentSystem {
         'difficultyLevel': newLevel,
         'timestamp': FieldValue.serverTimestamp(),
         'date': DateTime.now().toIso8601String().split('T')[0],
+        'contentId': contentId, // Add contentId to saved data
       });
       
       // Update user's current level for this assessment type

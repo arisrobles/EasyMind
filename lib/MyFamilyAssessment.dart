@@ -1042,8 +1042,8 @@ class _MyFamilyAssessmentState extends State<MyFamilyAssessment> {
       if (_useAdaptiveMode) {
         await AdaptiveAssessmentSystem.saveAssessmentResult(
           nickname: widget.nickname,
-          assessmentType: AssessmentType.family.value,
-          moduleName: "Functional Academics",
+          assessmentType: "social_interaction",
+          moduleName: "Communication Skills",
           totalQuestions: questions.length,
           correctAnswers: score,
           timeSpent: const Duration(minutes: 5),

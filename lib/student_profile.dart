@@ -72,6 +72,20 @@ class _StudentProfileState extends State<StudentProfile> with TickerProviderStat
     
     _bounceController.forward();
     _pulseController.repeat(reverse: true);
+    
+    // Add a periodic refresh to ensure data is up-to-date
+    _startPeriodicRefresh();
+  }
+  
+  void _startPeriodicRefresh() {
+    // Refresh data every 5 seconds to ensure real-time updates
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) {
+        print('DEBUG: Profile Screen - Periodic refresh triggered');
+        setState(() {}); // Trigger rebuild to refresh StreamBuilders
+        _startPeriodicRefresh(); // Schedule next refresh
+      }
+    });
   }
 
   @override
@@ -202,6 +216,7 @@ class _StudentProfileState extends State<StudentProfile> with TickerProviderStat
         }
 
         final userStatsData = snapshot.data!.data() as Map<String, dynamic>;
+        print('DEBUG: Profile Screen - User stats data: ${userStatsData}');
         
         return SingleChildScrollView(
           padding: ResponsiveUtils.getResponsivePadding(context),
@@ -906,11 +921,13 @@ class _StudentProfileState extends State<StudentProfile> with TickerProviderStat
         if (snapshot.hasData) {
           // Calculate real progress for each subject
           final lessons = snapshot.data!.docs;
+          print('DEBUG: Profile Screen - Found ${lessons.length} lesson retention records');
           final Map<String, List<Map<String, dynamic>>> subjectLessons = {};
           
           for (var doc in lessons) {
             final data = doc.data() as Map<String, dynamic>;
             final moduleName = data['moduleName'] ?? 'Unknown';
+            print('DEBUG: Profile Screen - Lesson data: ${data}');
             
             if (!subjectLessons.containsKey(moduleName)) {
               subjectLessons[moduleName] = [];
@@ -923,6 +940,7 @@ class _StudentProfileState extends State<StudentProfile> with TickerProviderStat
             if (lessons.isNotEmpty) {
               final passedLessons = lessons.where((lesson) => lesson['passed'] == true).length;
               subjectProgress[subject] = (passedLessons / lessons.length).clamp(0.0, 1.0);
+              print('DEBUG: Profile Screen - Subject $subject: $passedLessons/${lessons.length} passed (${subjectProgress[subject]})');
             }
           });
         }
