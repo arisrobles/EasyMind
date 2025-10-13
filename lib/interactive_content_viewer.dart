@@ -569,6 +569,66 @@ class _InteractiveContentViewerState extends State<InteractiveContentViewer>
     );
   }
 
+  /// Build image widget for question images
+  Widget _buildQuestionImageWidget(String imageData) {
+    // Check if it's a base64 image (starts with data:image)
+    if (imageData.startsWith('data:image/')) {
+      return Image.memory(
+        base64Decode(imageData.split(',')[1]), // Remove the data:image/...;base64, prefix
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildImageErrorWidget();
+        },
+      );
+    } else {
+      // It's an asset image or URL
+      if (imageData.startsWith('http')) {
+        return Image.network(
+          imageData,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return _buildImageErrorWidget();
+          },
+        );
+      } else {
+        return Image.asset(
+          imageData,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return _buildImageErrorWidget();
+          },
+        );
+      }
+    }
+  }
+
+  /// Build error widget for failed image loads
+  Widget _buildImageErrorWidget() {
+    return Container(
+      color: Colors.grey.shade100,
+      child: const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.image_not_supported,
+              size: 48,
+              color: Colors.grey,
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Image not available',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSimpleQuestion(BuildContext context, Map<String, dynamic> question, int index) {
     print('DEBUG: Building question $index: $question');
     
@@ -624,6 +684,23 @@ class _InteractiveContentViewerState extends State<InteractiveContentViewer>
           ),
           
           const SizedBox(height: 16),
+          
+          // Question Image (if available)
+          if (question['questionImage'] != null) ...[
+            Container(
+              width: double.infinity,
+              height: 200,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: _buildQuestionImageWidget(question['questionImage']),
+              ),
+            ),
+          ],
           
           // Interactive Options - Kids can tap to select
           if (question['options'] != null) ...[
