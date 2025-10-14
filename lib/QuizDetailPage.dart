@@ -192,8 +192,9 @@ class _QuizDetailPageState extends State<QuizDetailPage> {
                     const SizedBox(height: 16),
                     
                     // Image display for image-based questions
-                    if (question['usesImage'] == true && (question['imageUrl'] != null || question['imageBase64'] != null)) ...[
-                      _buildQuestionImage(question['imageBase64'] ?? question['imageUrl']),
+                    if ((question['usesImage'] == true && (question['imageUrl'] != null || question['imageBase64'] != null)) || 
+                        question['image'] != null) ...[
+                      _buildQuestionImage(question['imageBase64'] ?? question['imageUrl'] ?? question['image']),
                       const SizedBox(height: 16),
                     ],
                     if (question['type'] == 'multiple_choice') ...[

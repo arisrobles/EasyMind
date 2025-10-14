@@ -451,13 +451,18 @@ class _InteractiveContentViewerState extends State<InteractiveContentViewer>
                       ),
                     ),
                   ],
-                  if (item['imageUrl'] != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      '🖼️ ${item['imageUrl']}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF1976D2),
+                  if (item['imageUrl'] != null || item['image'] != null) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      width: double.infinity,
+                      height: 150,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: _buildQuestionImageWidget(item['imageUrl'] ?? item['image']),
                       ),
                     ),
                   ],
@@ -686,7 +691,7 @@ class _InteractiveContentViewerState extends State<InteractiveContentViewer>
           const SizedBox(height: 16),
           
           // Question Image (if available)
-          if (question['questionImage'] != null) ...[
+          if (question['questionImage'] != null || question['image'] != null) ...[
             Container(
               width: double.infinity,
               height: 200,
@@ -697,7 +702,7 @@ class _InteractiveContentViewerState extends State<InteractiveContentViewer>
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: _buildQuestionImageWidget(question['questionImage']),
+                child: _buildQuestionImageWidget(question['questionImage'] ?? question['image']),
               ),
             ),
           ],
@@ -1654,13 +1659,18 @@ class _InteractiveContentViewerState extends State<InteractiveContentViewer>
                       ),
                     ),
                   ],
-                  if (item['imageUrl'] != null) ...[
+                  if (item['imageUrl'] != null || item['image'] != null) ...[
                     ResponsiveSpacing(mobileSpacing: 8),
-                    ResponsiveText(
-                      '🖼️ ${item['imageUrl']}',
-                      style: const TextStyle(
-                        color: Color(0xFF1976D2),
-                        fontSize: 12,
+                    Container(
+                      width: double.infinity,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: _buildQuestionImageWidget(item['imageUrl'] ?? item['image']),
                       ),
                     ),
                   ],
