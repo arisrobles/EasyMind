@@ -256,7 +256,7 @@ class EnhancedContentManagementSystem {
   }) async {
     try {
       // Get current difficulty
-      final contentDoc = await _firestore.collection('content').doc(contentId).get();
+      final contentDoc = await _firestore.collection('contents').doc(contentId).get();
       if (!contentDoc.exists) return;
       
       final currentDifficulty = contentDoc.data()?['difficulty'] ?? 'beginner';
@@ -275,7 +275,7 @@ class EnhancedContentManagementSystem {
       
       // Update content difficulty
       if (newDifficulty != currentDifficulty) {
-        await _firestore.collection('content').doc(contentId).update({
+        await _firestore.collection('contents').doc(contentId).update({
           'difficulty': newDifficulty,
           'lastDifficultyUpdate': FieldValue.serverTimestamp(),
         });
@@ -338,9 +338,21 @@ class EnhancedContentManagementSystem {
   
   static Future<List<ContentItem>> _getAllContent() async {
     try {
-      final querySnapshot = await _firestore.collection('content').get();
+      // Query the 'contents' collection (where teacher uploads are saved)
+      // Filter for content that is ready for student app
+      final querySnapshot = await _firestore
+          .collection('contents')
+          .where('studentAppReady', isEqualTo: true)
+          .where('status', isEqualTo: 'active')
+          .orderBy('createdAt', descending: true)
+          .get();
+      
+      print('Fetched ${querySnapshot.docs.length} content items from Firestore');
+      
       return querySnapshot.docs.map((doc) {
         final data = doc.data();
+        print('Processing content: ${data['title']} (${data['type']})');
+        
         return ContentItem(
           id: doc.id,
           title: data['title'] ?? 'Untitled',

@@ -56,34 +56,21 @@ class StudentLoginScreen extends StatelessWidget {
         final studentDoc = querySnapshot.docs.first;
         await studentDoc.reference.update({'lastLogin': now});
         print('Existing student login updated: $nickname');
-      } else {
-        // Student doesn't exist - create new student profile
-        await firestore.collection('students').add({
+        
+        // Write to the studentLogins collection with timestamp log
+        print('Student Login time set to: $now');
+        await firestore.collection('studentLogins').add({
           'nickname': nickname,
-          'createdAt': now,
-          'lastLogin': now,
-          'totalLessonsCompleted': 0,
-          'totalXP': 0,
-          'currentLevel': 1,
-          'currentStreak': 0,
-          'longestStreak': 0,
-          'preferredLearningTime': 'morning',
-          'difficultyLevel': 'beginner',
-          'isActive': true,
-          'profileComplete': false,
-          'lastActivity': now,
+          'loginTime': now,
         });
-        print('New student profile created: $nickname');
+      } else {
+        // Student doesn't exist - show error message
+        print('Student not found: $nickname');
+        throw Exception('Student not found. Please contact your teacher to add your nickname to the system.');
       }
-
-      // Write to the studentLogins collection with timestamp log
-      print('Student Login time set to: $now');
-      await firestore.collection('studentLogins').add({
-        'nickname': nickname,
-        'loginTime': now,
-      });
     } catch (e) {
       print('Error recording student login: $e');
+      rethrow; // Re-throw to handle in the UI
     }
   }
 
@@ -286,6 +273,32 @@ class StudentLoginScreen extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) => StudentLandingPage(nickname: nickname),
+          ),
+        );
+      }).catchError((error) {
+        // Show error message when student is not found
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: ResponsiveText(
+              error.toString().replaceFirst('Exception: ', ''),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              mobileFontSize: 14,
+              tabletFontSize: 16,
+              desktopFontSize: 18,
+              largeDesktopFontSize: 20,
+            ),
+            backgroundColor: Colors.red[600],
+            behavior: SnackBarBehavior.floating,
+            margin: ResponsiveUtils.getResponsivePadding(context),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                ResponsiveUtils.getResponsiveBorderRadius(context, mobile: 15),
+              ),
+            ),
+            duration: Duration(seconds: 5),
           ),
         );
       });

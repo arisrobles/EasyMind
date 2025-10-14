@@ -93,7 +93,8 @@ class _QuizDetailPageState extends State<QuizDetailPage> {
 
   Future<void> _fetchQuiz() async {
     final snapshot = await FirebaseFirestore.instance
-        .collection('assessments')
+        .collection('contents')
+        .where('type', isEqualTo: 'assessment')
         .where('category', isEqualTo: widget.category)
         .orderBy('createdAt', descending: true)
         .limit(1)
